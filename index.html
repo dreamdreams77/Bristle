@@ -1024,7 +1024,8 @@ function bristleLook(t,after){if(Q>=1)return;const air=!P.g,mv=Math.abs(P.vx)>25
 const bristleD=bristle;bristle=function(t){bristleLook(t,0);bristleD(t);bristleLook(t,1)};
 
 /* foreground depth of field + bokeh */
-const fgL=fgPaint;fgPaint=function(t){const blur=Q==0&&'filter' in X;if(blur)X.filter='blur(2.2px)';fgL(t);if(blur)X.filter='none';
+{const lf=A.fg_leaf,bc=mk(lf.width,lf.height),bx=bc.getContext('2d');if('filter' in bx){bx.filter='blur(5px)';bx.drawImage(lf,0,0);A.fg_leaf=bc}}
+const fgL=fgPaint;fgPaint=function(t){fgL(t);
  if(Q==0){X.save();X.globalCompositeOperation='lighter';for(let k=0;k<7;k++){const W=vw+300,x=((k*vw/6.3-cam*2.2+t*6)%W+W)%W-150,y=vh*(.12+hash(k*3)*.7)+Math.sin(t*.4+k)*12,r=40+hash(k)*60,g=X.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,lc(.07));g.addColorStop(.75,lc(.04));g.addColorStop(1,lc(0));X.fillStyle=g;X.fillRect(x-r,y-r,r*2,r*2)}X.restore()}};
 
 /* sun/moon glow with shafts, then dark-zone vignette and Seam Stone light pools */
