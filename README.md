@@ -14,6 +14,8 @@ A playable, single-file HTML adventure: a honey badger named Bristle unfolds a w
 | Move | A / D or arrows | on-screen arrows |
 | Jump (press again in mid-air for Fennick's boost) | Space / W | jump button |
 | Glide | hold jump in the air | hold jump |
+| Ground Pound (in the air; smashes honey crates, bigger mushroom bounces, reveals nearby secret acorns) | S / Down | ⤓ button |
+| Air Dash (not during timed races, 0.85s cooldown) | Shift / X | » button |
 | Companion power | **E** | star button |
 | Switch companion power | **Q** | n/a |
 | Shop | E next to Sable's stall in the Hollow | star button |
@@ -24,6 +26,8 @@ A playable, single-file HTML adventure: a honey badger named Bristle unfolds a w
 - 8 mini-bosses: Lantern Leech, Cog Scorpion, Stone Sentinel, Nightmare Knitter, Cannon Duchess, Magma Mole, Snowdrift Golem, Hermit Crab Brute
 - Sable's shop, Creature Cards, secret acorns, rain-revealed platforms
 - 15 citizens across the world (press E to talk: hints and 14 citizen requests), Marlo's pearl quest in the Tidal Deep, 7 timed races (Acorn Dash, Sugar Rail Rush, Deep Rail Dash, Reef Rush, Cloud Hop, Glacier Glide, Dreamdive Dash)
+- 23 honey crates to smash (Ground Pound or Air Dash), acorn chains that pay bonus acorns, and a fold-map strip showing your progress and Seam Stones
+- Per-region weather (pollen, leaves, sprinkles, embers, snow, bubbles), colour grading, screen shake and impact FX
 - Sketchbook of quests with Renown ranks, more shop items, and automatic saving (Continue on the title screen)
 
 ## Art pipeline

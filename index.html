@@ -148,11 +148,11 @@ function pf(x,y,c,n=6,sp=120){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.rando
 
 /* ---------- menu ---------- */
 function menu(){state='menu';$('ov').classList.remove('hide');
-$('card').innerHTML='<h2>Bristle and the Unfolding Map</h2><p>The world is folding up like a paper map. Run, bounce and glide from Badger Hollow to the Seam Gate, lighting each Seam Stone to unfold a new region.</p><p><b>Choose a Life Path</b> (the full game has six):</p><div class="paths" id="pp"></div><p style="font-size:14px;opacity:.85">Move: arrows or A/D. Jump: Space or W. Jump again in mid-air with Fennick’s boots. Hold jump to glide. Press E (or ✦) for companion powers once friends join. Rain in the forest reveals hidden platforms. Cross the flag in the forest for a timed Acorn Dash (and the pink flag on the Candy Coast for Sugar Rail Rush), and visit Sable’s shop in the Hollow. Falling is harmless; you restart at the last Seam Stone.</p><button id="go">Start adventure</button>';
+$('card').innerHTML='<h2>Bristle and the Unfolding Map</h2><p>The world is folding up like a paper map. Run, bounce and glide from Badger Hollow to the Seam Gate, lighting each Seam Stone to unfold a new region.</p><p><b>Choose a Life Path:</b></p><div class="paths" id="pp"></div><p style="font-size:14px;opacity:.85">Move: arrows or A/D. Jump: Space or W. Jump again in mid-air with Fennick’s boots. Hold jump to glide. Press E (or ✦) for companion powers once friends join. Rain in the forest reveals hidden platforms. Cross the flag in the forest for a timed Acorn Dash (and the pink flag on the Candy Coast for Sugar Rail Rush), and visit Sable’s shop in the Hollow. Down/S in the air: Ground Pound (smashes honey crates). Shift/X: Air Dash. Falling is harmless; you restart at the last Seam Stone.</p><button id="go">Start adventure</button>';
 for(const k in PERKS){const b=document.createElement('button');b.innerHTML=k+'<small>'+PERKS[k].txt+'</small>';if(k==path)b.className='sel';b.onclick=()=>{path=k;[...$('pp').children].forEach(c=>c.classList.toggle('sel',c==b))};$('pp').appendChild(b)}
 $('go').onclick=()=>{reset();$('ov').classList.add('hide');state='play';toast('Fennick the Fox joins: tap jump again in mid-air! Gather acorns to warm the Hollow.')}}
 function win(){state='won';const w=Math.round(found/AC.length*100);const end=w>=90?'The Hollow glows like a lantern. Aurelia sends a star to say thank you.':w>=50?'The Hollow hums with new lights. The map stays open for you.':'The Seam Gate opens. There is so much left to find!';
-$('card').innerHTML='<h2>The Last Fold opens!</h2><p>Warmth: <b>'+w+'%</b><br>Golden Acorns: <b>'+found+'/'+AC.length+'</b> (secret ones: '+secrets+'/'+MU.length+')<br>Creature Cards: <b>'+cards+'/'+CR.length+'</b><br>Acorn Dash: <b>'+(bestT?bestT.toFixed(1)+'s'+(bestM>=0?' ('+MED[bestM][1]+')':''):'not run')+'</b><br>Sugar Rail Rush: <b>'+(R2.bestT?R2.bestT.toFixed(1)+'s'+(R2.bestM>=0?' ('+R2.med[R2.bestM][1]+')':''):'not run')+'</b><br>Deep Rail Dash: <b>'+(R3.bestT?R3.bestT.toFixed(1)+'s'+(R3.bestM>=0?' ('+R3.med[R3.bestM][1]+')':''):'not run')+'</b><br>Time: <b>'+Math.round(time)+'s</b> as '+path+'</p><p>'+end+'</p><p style="font-size:14px;opacity:.85">This is a playable slice of the full design: 12 regions, 12 of 12 companions’ worth of ideas, 1 tiny taste of the Hollow.</p><button id="go">Play again</button>';$('ov').classList.remove('hide');$('go').onclick=menu}
+$('card').innerHTML='<h2>The Last Fold opens!</h2><p>Warmth: <b>'+w+'%</b><br>Golden Acorns: <b>'+found+'/'+AC.length+'</b> (secret ones: '+secrets+'/'+MU.length+')<br>Creature Cards: <b>'+cards+'/'+CR.length+'</b><br>Acorn Dash: <b>'+(bestT?bestT.toFixed(1)+'s'+(bestM>=0?' ('+MED[bestM][1]+')':''):'not run')+'</b><br>Sugar Rail Rush: <b>'+(R2.bestT?R2.bestT.toFixed(1)+'s'+(R2.bestM>=0?' ('+R2.med[R2.bestM][1]+')':''):'not run')+'</b><br>Deep Rail Dash: <b>'+(R3.bestT?R3.bestT.toFixed(1)+'s'+(R3.bestM>=0?' ('+R3.med[R3.bestM][1]+')':''):'not run')+'</b><br>Time: <b>'+Math.round(time)+'s</b> as '+path+'</p><p>'+end+'</p><p style="font-size:14px;opacity:.85">Thanks for unfolding the map with Bristle!</p><button id="go">Play again</button>';$('ov').classList.remove('hide');$('go').onclick=menu}
 
 /* ---------- input ---------- */
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' ','a','d','w','e','q'].includes(k)){e.preventDefault();if((k==' '||k=='w'||k=='arrowup')&&!keys.j){jumpBuf=.12}keys[k=='arrowleft'?'a':k=='arrowright'?'d':(k==' '||k=='arrowup')?'w':k]=1}});
@@ -761,6 +761,169 @@ const perkGD=perk;perk=function(dt){perkGD(dt);RGL.update(dt);RDD.update(dt);if(
 const rsGD=reset;reset=function(){rsGD();[RGL,RDD].forEach(r=>{r.on=0;r.armed=1;r.bestT=null;r.bestM=-1})};
 const saveGD=save;save=function(){saveGD();try{const d=JSON.parse(localStorage.getItem(SK));[RGL,RDD].forEach(r=>d[r.key]=[r.bestT,r.bestM]);localStorage.setItem(SK,JSON.stringify(d))}catch(e){}};
 const loadGD=load;load=function(){loadGD();try{const d=JSON.parse(localStorage.getItem(SK));[RGL,RDD].forEach(r=>{if(d[r.key]){r.bestT=d[r.key][0];r.bestM=d[r.key][1]==null?-1:d[r.key][1]}})}catch(e){}};
+/* ===== v2: bug fixes, depth (ground pound, air dash, honey crates, acorn chains, fold-map strip) and graphics (zone weather, grading, FX) ===== */
+(()=>{
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let pReq=0,dReq=0,pounding=0,adT=0,adCd=0,adUsed=0,shake=0,chain=0,chainT=0,lf=0,crN=0,pulseT=0,pulseX=0,tip=0;
+const CRATES=[],pops=[],rings=[],ghosts=[];
+const racing=()=>race.on||R2.on||R3.on||R4.on||R5.on||RGL.on||RDD.on;
+const pop=(x,y,s,c)=>pops.push({x,y,s,c,l:0});
+
+/* --- bug fixes --- */
+const releaseKeys=()=>{for(const k in keys)keys[k]=0;jumpBuf=0;pReq=dReq=0};
+addEventListener('blur',releaseKeys);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseKeys()});
+document.addEventListener('click',e=>{if(e.target.tagName=='BUTTON')e.target.blur()});
+
+/* --- honey crates: placed on solid ground, one or two per region --- */
+{const avoid=[...ST.map(s=>s.x),...MU.map(m=>m.x),RS,RF,SHX,9250,14500,20000,21800];
+ [[0,.62],[1,.3],[1,.75],[2,.4],[2,.8],[3,.35],[3,.8],[4,.45],[4,.85],[5,.3],[5,.7],[6,.5],[7,.4],[7,.85],[8,.5],[9,.4],[9,.8],[10,.35],[10,.75],[11,.4],[11,.8],[12,.3],[12,.7]].forEach(([zi,u])=>{
+  const z=Z[zi];let best=null;
+  for(let d=0;d<500&&best===null;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);
+   if(gAt(x-40)&&gAt(x+40)&&avoid.every(a=>Math.abs(a-x)>140)&&CRATES.every(c=>Math.abs(c.x-x)>220)){best=x;break}}
+  if(best!==null)CRATES.push({x:best,t:0})})}
+function crateHit(x,r){CRATES.forEach(c=>{if(c.t||Math.abs(c.x-x)>r||P.y+P.h<GY-60)return;c.t=1;crN++;bonus+=2;
+ pf(c.x,GY-24,'#ffd54a',22,340);pf(c.x,GY-24,'#b9770e',10,220);pop(c.x,GY-56,'+2 acorns','#ffd54a');shake=Math.max(shake,.35);
+ toast('Honey crate smashed! +2 acorns to spend ('+crN+'/'+CRATES.length+')')})}
+function drawCrate(c,t){const x=c.x,near=Math.abs(P.x-x)<240;
+ X.fillStyle='rgba(20,10,40,.28)';X.beginPath();X.ellipse(x+3,GY+2,30,5,0,0,7);X.fill();
+ X.save();X.translate(x,GY);
+ if(near){X.globalCompositeOperation='lighter';X.globalAlpha=.3+.15*Math.sin(t*4);X.drawImage(A.glow_w,-50,-80,100,100);X.globalCompositeOperation='source-over';X.globalAlpha=1}
+ const g=X.createLinearGradient(0,-42,0,0);g.addColorStop(0,'#ffe08a');g.addColorStop(1,'#d58a1e');
+ X.fillStyle=g;X.beginPath();X.roundRect(-23,-42,46,42,7);X.fill();
+ X.save();X.clip();X.strokeStyle='rgba(120,66,8,.5)';X.lineWidth=1.5;
+ for(let r=0;r<4;r++)for(let q=-2;q<3;q++){const hx=q*16+(r%2?8:0),hy=-38+r*13;X.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;X.lineTo(hx+Math.cos(a)*8,hy+Math.sin(a)*8)}X.closePath();X.stroke()}
+ X.restore();
+ X.strokeStyle='#5a3410';X.lineWidth=2.5;X.beginPath();X.roundRect(-23,-42,46,42,7);X.stroke();
+ X.fillStyle='rgba(90,52,16,.85)';X.fillRect(-23,-24,46,6);X.fillStyle='rgba(255,255,255,.45)';X.fillRect(-18,-38,14,3);
+ if(near){X.translate(0,-62+Math.sin(t*5)*2);X.fillStyle='#fff';X.strokeStyle='#5a3410';X.lineWidth=2;X.beginPath();X.moveTo(-9,-6);X.lineTo(0,6);X.lineTo(9,-6);X.lineTo(4,-6);X.lineTo(4,-14);X.lineTo(-4,-14);X.lineTo(-4,-6);X.closePath();X.fill();X.stroke()}
+ X.restore()}
+
+/* --- save / load: Snowdrift Golem was never saved, so Continue past Frostfold dragged you back behind its wall --- */
+const saveV=save;save=function(){saveV();try{const d=JSON.parse(localStorage.getItem(SK));d.gl=gl.dead?1:0;d.cr=CRATES.map(c=>c.t?1:0);localStorage.setItem(SK,JSON.stringify(d))}catch(e){}};
+const loadV=load;load=function(){loadV();try{const d=JSON.parse(localStorage.getItem(SK));if(d.gl||ST[12].on)gl.dead=1;(d.cr||[]).forEach((v,i)=>{if(v&&CRATES[i])CRATES[i].t=1});crN=CRATES.filter(c=>c.t).length;secrets=AC.filter(a=>a.t&&a.s).length;lf=found}catch(e){}};
+const resetV=reset;reset=function(){resetV();CRATES.forEach(c=>c.t=0);crN=0;chain=chainT=lf=0;pops.length=rings.length=ghosts.length=0;adT=adCd=adUsed=pounding=shake=pulseT=0;pReq=dReq=0};
+
+/* --- input: S/Down = Ground Pound, Shift/X = Air Dash --- */
+addEventListener('keydown',e=>{if(state!='play'||e.repeat)return;const k=e.key.toLowerCase();if(k=='shift'||k=='x')dReq=1;else if(k=='s'||k=='arrowdown'){e.preventDefault();pReq=1}});
+{const t2=document.createElement('div');t2.id='touch2';
+ [['bp','⤓','Ground pound'],['bd','»','Air dash']].forEach(([id,tx,al])=>{const b=document.createElement('button');b.id=id;b.textContent=tx;b.setAttribute('aria-label',al);
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(state!='play')return;id=='bp'?pReq=1:dReq=1});t2.appendChild(b)});
+ $('stage').insertBefore(t2,$('ov'))}
+
+/* --- simulation --- */
+function impact(){pounding=0;shake=Math.max(shake,.55);rings.push({x:P.x,y:P.y+P.h,l:0});pf(P.x,P.y+P.h-2,'#e8c98a',16,440);pf(P.x,P.y+P.h-2,Z[zIdx(P.x)].t,10,300);crateHit(P.x,95);pulseT=2.4;pulseX=P.x;MU.forEach(m=>{if(Math.abs(m.x-P.x)<130)m.sq=1})}
+const upd0=update;
+update=function(dt){
+ const low=P.y>700,vy0=P.vy,g0=P.g;
+ adCd-=dt;if(P.g)adUsed=0;
+ if(dReq){dReq=0;if(racing())toast('No dashing during races!');else if(adCd<=0&&!adUsed&&!pounding){adT=.2;adCd=.85;if(!P.g)adUsed=1;shake=Math.max(shake,.12);pf(P.x-P.f*10,P.y+P.h/2,'#fff',10,260)}}
+ if(pReq){pReq=0;if(!P.g&&!pounding&&adT<=0){pounding=1;P.vy=1100;P.vx*=.4;pf(P.x,P.y,'#ffe9a8',8,200)}}
+ upd0(dt);
+ if(adT>0){adT-=dt;P.vx=P.f*640;if(P.vy>0)P.vy=0;crateHit(P.x+P.f*24,46);if(Math.random()<.8)ghosts.push({x:P.x,y:P.y,f:P.f,l:.25})}
+ if(pounding){if(P.g)impact();else if(P.vy<-200){P.vy=Math.max(-1250,P.vy*1.25);pounding=0;shake=Math.max(shake,.3);rings.push({x:P.x,y:P.y+P.h,l:0})}else{P.vy=Math.max(P.vy,1000);P.vx*=.94}}
+ if(!g0&&P.g&&vy0>420){pf(P.x,P.y+P.h,Z[zIdx(P.x)].t,8,200);pf(P.x,P.y+P.h,'#fff9',4,120)}
+ if(P.g&&Math.abs(P.vx)>220&&Math.random()<.12)pf(P.x-P.f*14,P.y+P.h,'#fff9',1,40);
+ if(found<lf)lf=found;
+ if(found>lf){const n=found-lf;lf=found;chainT=2.6;chain+=n;if(chain>=3)pop(P.x,P.y-24,'x'+chain,'#fff');
+  if(chain>=5&&chain%5<n){const b=Math.min(4,Math.floor(chain/5));bonus+=b;pop(P.x,P.y-52,'Chain! +'+b,'#ff9fc6');toast('Acorn chain x'+chain+'! +'+b+' acorns to spend')}}
+ else if(chainT>0){chainT-=dt;if(chainT<=0)chain=0}
+ shake=Math.max(0,shake-dt*2.2);pulseT-=dt;
+ for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.l+=dt;p.y-=38*dt;if(p.l>1.1)pops.splice(i,1)}
+ for(let i=rings.length-1;i>=0;i--){rings[i].l+=dt;if(rings[i].l>.55)rings.splice(i,1)}
+ for(let i=ghosts.length-1;i>=0;i--){ghosts[i].l-=dt;if(ghosts[i].l<=0)ghosts.splice(i,1)}
+ if(low&&P.y<500){[R4,R5,RGL,RDD].forEach(r=>r.on=0);pounding=0;adT=0}
+ if(!tip&&zIdx(P.x)>=1){tip=1;setTimeout(()=>toast('New moves: S / Down = Ground Pound (smash honey crates) · Shift = Air Dash'),2700)}
+};
+
+/* --- world-space drawing, hooked in at Bristle's layer --- */
+const DARK=new Set([3,4,8,10,12]);
+const bristle1=bristle;
+bristle=function(t){
+ CRATES.forEach(c=>{if(!c.t&&c.x>cam-60&&c.x<cam+vw+60)drawCrate(c,t)});
+ if(pulseT>0)AC.forEach(a=>{if(a.s&&!a.t&&Math.abs(a.x-pulseX)<420){X.strokeStyle='#fff';X.lineWidth=3;X.globalAlpha=clamp(pulseT,0,1)*(.6+.4*Math.sin(t*10));X.beginPath();X.arc(a.x,a.y,24+Math.sin(t*8)*5,0,7);X.stroke();X.globalAlpha=1}});
+ if(DARK.has(zIdx(P.x))){X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.32;X.drawImage(A.glow_w,P.x-130,P.y+P.h/2-130,260,260);X.restore()}
+ if(ghosts.length){X.save();X.globalCompositeOperation='lighter';ghosts.forEach(g=>{X.globalAlpha=Math.min(.6,g.l*2.2);X.save();X.translate(g.x,g.y+P.h/2);X.scale(g.f,1);X.drawImage(A.char_bristle_jump,-48,-42,96,80);X.restore()});X.restore()}
+ if(adT>0){X.save();X.strokeStyle='#fff';X.lineWidth=2;for(let i=0;i<6;i++){X.globalAlpha=.55-i*.07;const y=P.y+4+i*5;X.beginPath();X.moveTo(P.x-P.f*(24+i*6),y);X.lineTo(P.x-P.f*(70+i*9),y);X.stroke()}X.restore()}
+ if(pounding&&!P.g){const g=X.createLinearGradient(0,P.y-90,0,P.y+10);g.addColorStop(0,'rgba(255,230,160,0)');g.addColorStop(1,'rgba(255,230,160,.55)');X.fillStyle=g;X.fillRect(P.x-9,P.y-90,18,100)}
+ bristle1(t);
+ if(rings.length){X.save();X.globalCompositeOperation='lighter';rings.forEach(r=>{const u=r.l/.55;X.globalAlpha=Math.max(0,1-u)*.8;X.strokeStyle='#ffe9a8';X.lineWidth=5*(1-u)+1;X.beginPath();X.ellipse(r.x,r.y-2,20+u*150,5+u*16,0,0,7);X.stroke()});X.restore()}
+ if(pops.length){X.save();X.font="700 18px Fredoka,'Trebuchet MS',sans-serif";X.textAlign='center';X.lineJoin='round';pops.forEach(p=>{X.globalAlpha=Math.max(0,1-p.l/1.1);X.lineWidth=4;X.strokeStyle='rgba(40,20,60,.85)';X.strokeText(p.s,p.x,p.y);X.fillStyle=p.c;X.fillText(p.s,p.x,p.y)});X.restore()}
+};
+
+/* --- ambient weather per region + colour grade + screen shake --- */
+const WX=Array.from({length:70},(_,i)=>({u:hash(i*3.1),v:hash(i*7.7+1),s:hash(i*1.9+2),p:hash(i+9)*6.28}));
+const WK=[
+ {m:'dot',c:'#ffe9a0',vx:6,vy:-10,r:1.8,a:.7,g:1,tw:1},
+ {m:'leaf',c:'#b8e86a',vx:-16,vy:34,r:5,a:.8},
+ {m:'spr',pal:['#ff7fae','#fff','#7fd6ff','#ffe27a'],vx:-8,vy:46,r:3,a:.85},
+ {m:'star',c:'#9ff0ff',vx:3,vy:-16,r:2.4,a:.8,g:1,tw:1},
+ {m:'dot',c:'#b6f0a0',vx:8,vy:-6,r:2.2,a:.55,g:1,tw:1},
+ {m:'streak',c:'#f6dca0',vx:-300,vy:6,r:1.4,a:.4},
+ {m:'streak',c:'#ffffff',vx:-140,vy:2,r:1.6,a:.35},
+ {m:'dot',c:'#f1deb0',vx:4,vy:-5,r:1.6,a:.5,g:1,tw:1},
+ {m:'leaf',c:'#ffc0ee',vx:-8,vy:-22,r:4.5,a:.7,g:1},
+ {m:'star',c:'#ffe9a8',vx:2,vy:-6,r:2.6,a:.85,g:1,tw:1},
+ {m:'dot',c:'#ff9a4a',vx:10,vy:-56,r:2.2,a:.9,g:1,tw:1},
+ {m:'dot',c:'#ffffff',vx:-18,vy:46,r:2.6,a:.9},
+ {m:'bub',c:'#bff8ee',vx:3,vy:-36,r:3.4,a:.7}];
+function weather(t){const c=cam+vw/2,zi=zIdx(c),z=Z[zi],k=WK[zi],f=.3+.7*clamp(Math.min(c-z.a,z.b-c)/260,0,1),n=RM?20:Q?34:66,W=vw+40,H=vh+40;
+ X.save();X.setTransform(S,0,0,S,0,0);if(k.g)X.globalCompositeOperation='lighter';X.fillStyle=k.c||'#fff';X.strokeStyle=k.c||'#fff';X.lineWidth=1.4;
+ for(let i=0;i<n;i++){const w=WX[i],sp=.4+w.s*1.2,
+  x=((w.u*vw+(RM?0:t*k.vx*sp)-cam*.25*sp+Math.sin(t*.8+w.p)*(k.m=='streak'?0:14))%W+W)%W-20,
+  y=((w.v*vh+(RM?0:t*k.vy*sp))%H+H)%H-20;
+  X.globalAlpha=k.a*f*(k.tw?.55+.45*Math.sin(t*2.4+w.p):1)*(.45+.55*w.s);
+  if(k.m=='dot'){X.beginPath();X.arc(x,y,k.r*sp,0,7);X.fill()}
+  else if(k.m=='leaf'){X.save();X.translate(x,y);X.rotate(t*1.4+w.p);X.beginPath();X.ellipse(0,0,k.r*sp,k.r*sp*.5,0,0,7);X.fill();X.restore()}
+  else if(k.m=='spr'){X.fillStyle=k.pal[i%k.pal.length];X.save();X.translate(x,y);X.rotate(t*2+w.p);X.fillRect(-k.r*sp,-1,k.r*sp*2,2.2);X.restore()}
+  else if(k.m=='star'){const r=k.r*sp*1.5;X.beginPath();X.moveTo(x-r,y);X.lineTo(x+r,y);X.moveTo(x,y-r);X.lineTo(x,y+r);X.stroke()}
+  else if(k.m=='streak'){X.beginPath();X.moveTo(x,y);X.lineTo(x-k.vx*.06*sp,y);X.stroke()}
+  else{X.beginPath();X.arc(x,y,k.r*sp,0,7);X.stroke();X.globalAlpha*=.8;X.fillRect(x-k.r*sp*.45,y-k.r*sp*.45,1.5,1.5)}}
+ X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='soft-light';X.globalAlpha=.17;X.fillStyle=skyAt(c)[0];X.fillRect(0,0,C.width,C.height);
+ X.restore()}
+const draw1=draw;
+draw=function(t){const cx=cam,cy=oy;if(shake>0&&!RM){cam+=(Math.random()-.5)*shake*14;oy+=(Math.random()-.5)*shake*14}
+ draw1(t);cam=cx;oy=cy;weather(t)};
+
+/* --- fold-map strip: where you are, which Seam Stones are lit, and your new moves --- */
+{const st=document.createElement('style');st.textContent=`
+#prog{position:absolute;left:12px;top:56px;width:min(38vw,320px);pointer-events:none;font-size:12px;font-weight:700;z-index:2}
+#pw{position:relative;padding:4px 0}
+#pbar{display:flex;height:10px;border-radius:6px;overflow:hidden;border:2px solid var(--line);background:var(--card);opacity:.92}
+#pbar i{display:block;height:100%}
+#pmk{position:absolute;top:0;width:10px;height:18px;margin-left:-5px;border-radius:5px;background:#fff;border:2px solid var(--rose);box-shadow:0 0 8px #fff}
+.pst{position:absolute;top:6px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#5b5670;border:1px solid #fff9}
+.pst.on{background:#ffe27a;box-shadow:0 0 6px #ffe27a}
+#pab{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
+#pab span{position:relative;overflow:hidden;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:1px 7px;opacity:.92}
+#pab span.hot{border-color:var(--rose)}
+#cdb{position:absolute;left:0;bottom:0;height:3px;background:var(--honey);width:0}
+#touch2{display:none;position:absolute;right:14px;bottom:88px;gap:8px;flex-direction:column;z-index:2}
+#touch2 button{width:52px;height:52px;border-radius:50%;font-size:20px;opacity:.82;touch-action:none}
+@media (pointer:coarse){#touch2{display:flex}}
+#hud{background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0));box-shadow:0 2px 0 var(--line)}
+button{transition:transform .12s,box-shadow .12s,background .2s}
+@media (hover:hover){button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 0 var(--line)}}
+button:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+.card{animation:cardIn .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes cardIn{from{transform:translateY(14px) scale(.96);opacity:0}}
+#ov{backdrop-filter:blur(3px)}
+.bar i{box-shadow:0 0 8px rgba(246,183,60,.8)}
+.folds b.on{box-shadow:0 0 8px var(--honey)}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}`;
+ document.head.appendChild(st);
+ const pg=document.createElement('div');pg.id='prog';
+ pg.innerHTML='<div id="pw"><div id="pbar">'+Z.map(z=>'<i style="flex:'+(z.b-z.a)+';background:linear-gradient(90deg,'+z.s[0]+','+z.s[1]+')"></i>').join('')+'</div>'+ST.map(s=>'<b class="pst" style="left:'+(s.x/220)+'%"></b>').join('')+'<u id="pmk"></u></div><div id="pab"><span id="czn"></span><span id="cdh">⇧ Dash<b id="cdb"></b></span><span id="cpd">S Pound</span><span id="ccr"></span><span id="cch" style="display:none"></span></div>';
+ $('stage').insertBefore(pg,$('ov'));
+ const pst=[...pg.querySelectorAll('.pst')],mk=$('pmk'),memo={};
+ const set=(k,el,v)=>{if(memo[k]!==v){memo[k]=v;el.textContent=v}};
+ const perkV=perk;perk=function(dt){perkV(dt);
+  mk.style.left=(clamp(P.x/22000,0,1)*100).toFixed(1)+'%';
+  pst.forEach((b,i)=>{const on=!!ST[i].on;if(memo['s'+i]!==on){memo['s'+i]=on;b.classList.toggle('on',on)}});
+  set('z',$('czn'),Z[zIdx(P.x)].n);set('cr',$('ccr'),'Crates '+crN+'/'+CRATES.length);
+  const cc=chain>1?'Chain x'+chain:'';set('ch',$('cch'),cc);$('cch').style.display=cc?'':'none';
+  $('cdb').style.width=(clamp(adCd/.85,0,1)*100).toFixed(0)+'%';$('cpd').classList.toggle('hot',!!pounding)}}
+})();
 reset();menu();requestAnimationFrame(loop);
 </script>
 </body>
