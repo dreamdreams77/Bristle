@@ -1037,7 +1037,15 @@ function lightPass(t){if(Q>=2)return;X.save();X.setTransform(S,0,0,S,0,0);X.glob
  X.globalCompositeOperation='lighter';
  ST.forEach(s=>{const sx2=(s.x-cam)*S;if(sx2<-300||sx2>C.width+300)return;const cy=(GY-40+oy)*S,rr=(s.on?170:90)*S,gg=X.createRadialGradient(sx2,cy,0,sx2,cy,rr);gg.addColorStop(0,s.on?'rgba(255,226,120,'+(.16+LT.dk*.4)+')':'rgba(120,120,200,.1)');gg.addColorStop(1,'rgba(255,226,120,0)');X.fillStyle=gg;X.fillRect(sx2-rr,cy-rr,rr*2,rr*2)});
  X.restore()}
-const drawLt=draw;draw=function(t){lightStep();drawLt(t);lightPass(t)};
+/* bloom on bright areas + a gentle contrast curve (full quality only) */
+let BLM=null,BLM2=null;
+function finish(){if(Q>=1||!('filter' in X))return;const w=Math.max(8,C.width>>3),h=Math.max(8,C.height>>3);
+ if(!BLM||BLM.width!=w||BLM.height!=h){BLM=mk(w,h);BLM2=mk(w,h)}
+ const a=BLM.getContext('2d'),b=BLM2.getContext('2d');a.globalCompositeOperation='copy';a.drawImage(C,0,0,w,h);
+ b.globalCompositeOperation='copy';b.filter='brightness(.78) contrast(3.4) saturate(1.2)';b.drawImage(BLM,0,0);b.filter='none';
+ X.save();X.setTransform(1,0,0,1,0,0);X.imageSmoothingQuality='high';X.globalCompositeOperation='screen';X.globalAlpha=.3;X.drawImage(BLM2,0,0,C.width,C.height);
+ X.globalCompositeOperation='soft-light';X.globalAlpha=.18;X.drawImage(C,0,0);X.restore()}
+const drawLt=draw;draw=function(t){lightStep();drawLt(t);lightPass(t);finish()};
 })();
 reset();menu();requestAnimationFrame(loop);
 </script>

@@ -28,7 +28,7 @@ A playable, single-file HTML adventure: a honey badger named Bristle unfolds a w
 - 15 citizens across the world (press E to talk: hints and 14 citizen requests), Marlo's pearl quest in the Tidal Deep, 7 timed races (Acorn Dash, Sugar Rail Rush, Deep Rail Dash, Reef Rush, Cloud Hop, Glacier Glide, Dreamdive Dash)
 - 23 honey crates to smash (Ground Pound or Air Dash), acorn chains that pay bonus acorns, and a fold-map strip showing your progress and Seam Stones
 - 33 roaming Burrs across regions 1-12: stomp, dash into or ground-pound them (side contact just knocks you back). Clear a region's patrol for +3 acorns; chain stomps and mushroom bounces without landing for Air Combos (+1 acorn every 3). Progress is saved.
-- Depth-of-image pass: a directional light per region (rim light and long cast shadow on Bristle, lit lips, ambient occlusion and cast shadows on ground and platforms), hazy far ridges, cave ceilings, foreground blur and bokeh, sun/moon glow with shafts, and dark-zone lighting with Seam Stone light pools. Heavier effects switch off automatically on slower devices.
+- Depth-of-image pass: a directional light per region (rim light and long cast shadow on Bristle, lit lips, ambient occlusion and cast shadows on ground and platforms), hazy far ridges, cave ceilings, foreground blur and bokeh, sun/moon glow with shafts, and dark-zone lighting with Seam Stone light pools. Bloom on bright areas and a soft contrast curve add punch at full quality. Heavier effects switch off automatically on slower devices.
 - Per-region weather (pollen, leaves, sprinkles, embers, snow, bubbles), colour grading, screen shake and impact FX
 - Sketchbook of quests with Renown ranks, more shop items, and automatic saving (Continue on the title screen)
 
