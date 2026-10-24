@@ -977,6 +977,66 @@ const saveB=save;save=function(){saveB();try{const d=JSON.parse(localStorage.get
 const loadB=load;load=function(){loadB();try{const d=JSON.parse(localStorage.getItem(SK));(d.bu||[]).forEach((v,i)=>{if(v&&BU[i])BU[i].dead=1});(d.bz||[]).forEach(z=>zoneDone.add(z))}catch(e){}};
 {const sp=document.createElement('span');sp.id='cbu';$('pab').appendChild(sp);const sp2=document.createElement('span');sp2.id='cac';sp2.style.display='none';$('pab').appendChild(sp2);
  const perkB=perk;perk=function(dt){perkB(dt);const a='Burrs '+(BU.length-burrsLeft())+'/'+BU.length;if(sp.textContent!=a)sp.textContent=a;const c=ac>1?'Air x'+ac:'';if(sp2.textContent!=c){sp2.textContent=c;sp2.style.display=c?'':'none'}}}
+
+/* ===== v4 less-flat look: one directional light per region, hazy far ridges, cave ceilings, AO + cast shadows, rim light, foreground depth of field, dark-zone light pools ===== */
+const rgbOf=s=>s[0]=='#'?hx(s):s.match(/\d+/g).map(Number),rgba=(c,a)=>'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';
+/* light colour, direction (-1 from the left, +1 from the right), darkness, haze */
+const LZ=[['#ffd68a',-.7,0,.35],['#d8ffb0',-.6,0,.4],['#ffc0e0',-.6,0,.3],['#8fe8ff',0,.5,.25],['#a8ffd0',.3,.4,.4],['#ffe0a0',-.8,0,.3],['#ffffff',-.5,0,.35],['#ffd8a0',-.7,0,.3],['#d8b8ff',.3,.3,.35],['#fff0d0',-.5,0,.3],['#ff9a5a',0,.5,.2],['#cfe8ff',-.6,0,.4],['#6affea',0,.45,.3]];
+const LT={c:[255,214,138],lx:-.7,dk:0,hz:.35},lc=a=>rgba(LT.c,a);
+function lightStep(){const c=cam+vw/2,zi=zIdx(c),z=Z[zi],hasN=zi<12,u=hasN?clamp((c-z.a-(z.b-z.a)*.8)/((z.b-z.a)*.2),0,1):0,a=LZ[zi],b=LZ[hasN?zi+1:zi],ca=hx(a[0]),cb=hx(b[0]),k=.08,L=(p,q)=>p+(q-p)*u;
+ for(let i=0;i<3;i++)LT.c[i]+=(L(ca[i],cb[i])-LT.c[i])*k;LT.lx+=(L(a[1],b[1])-LT.lx)*k;LT.dk+=(L(a[2],b[2])-LT.dk)*k;LT.hz+=(L(a[3],b[3])-LT.hz)*k}
+const STY=['h','h','b','m','h','h','b','r','m','b','m','m','r'],CAVE=new Set([3,8,10]);
+function ridge(st,wx,sd){if(st=='m'){const a=Math.abs(Math.sin(wx*.0042+sd)),b=Math.abs(Math.sin(wx*.011+sd*2));return(1-Math.pow(a,.55))*.75+(1-b)*.25}
+ if(st=='b')return Math.abs(Math.sin(wx*.006+sd))*.8+Math.abs(Math.sin(wx*.017))*.2;
+ if(st=='r'){const c=Math.floor(wx/70);return .35+hash(c+sd)*.65*(hash(c*3+1)>.35?1:.4)}
+ return .5+Math.sin(wx*.005+sd)*.3+Math.sin(wx*.013+sd*3)*.12+Math.sin(wx*.031)*.04}
+function farLayers(t){if(Q>=2)return;const c=cam+vw/2,zi=zIdx(c),z=Z[zi],sk=rgbOf(skyAt(c)[1]),zt=hx(z.t),fa=.25+.75*clamp(Math.min(c-z.a,z.b-c)/320,0,1),st=STY[zi];
+ for(let L=0;L<2;L++){const yb=oy+GY-(250-L*50),amp=70-L*18,off=cam*(.05+L*.06),w=.35+L*.2,col=zt.map((v,i)=>v*w+sk[i]*(1-w)),g=X.createLinearGradient(0,yb-amp,0,yb+120);
+  g.addColorStop(0,rgba(col,.62*fa));g.addColorStop(1,rgba(col,0));X.fillStyle=g;X.beginPath();X.moveTo(0,yb+130);
+  for(let x=0;x<=vw+24;x+=24)X.lineTo(x,yb-ridge(st,x+off,L*2.3+zi)*amp);X.lineTo(vw+24,yb+130);X.fill();
+  X.strokeStyle=lc(.14*fa);X.lineWidth=1.5;X.beginPath();for(let x=0;x<=vw+24;x+=24){const y=yb-ridge(st,x+off,L*2.3+zi)*amp;x?X.lineTo(x,y):X.moveTo(x,y)}X.stroke()}
+ if(CAVE.has(zi))for(let L=0;L<2;L++){const off=cam*(.25+L*.15),i0=Math.floor(off/60)-1;X.fillStyle=rgba([8,4,24],(.6-L*.18)*fa);X.beginPath();
+  for(let i=i0;i<i0+vw/60+3;i++){const x=i*60-off,len=25+hash(i+L*50)*(110-L*30);X.moveTo(x,-10);X.lineTo(x+30,len);X.lineTo(x+60,-10)}X.fill()}}
+function hazeBand(){const c=cam+vw/2,sk=rgbOf(skyAt(c)[1]),y0=oy+GY-170,H=240,g=X.createLinearGradient(0,y0,0,y0+H);
+ g.addColorStop(0,rgba(sk,0));g.addColorStop(.55,rgba(sk,LT.hz*.9));g.addColorStop(1,rgba(sk,0));X.fillStyle=g;X.fillRect(0,y0,vw,H)}
+const bgL=bgPaint;bgPaint=function(t){farLayers(t);bgL(t);hazeBand()};
+
+/* ambient occlusion, lit lips, cliff-face shading and platform cast shadows */
+const psL=paintSolid;paintSolid=function(s){psL(s);if(Q>=2)return;const x=s[0],y=s[1],w=s[2];
+ if(s[3]){let g=X.createLinearGradient(0,y+6,0,y+64);g.addColorStop(0,'rgba(12,6,28,.34)');g.addColorStop(1,'rgba(12,6,28,0)');X.fillStyle=g;X.fillRect(x,y+6,w,58);
+  g=X.createLinearGradient(x,0,x+30,0);g.addColorStop(0,'rgba(12,6,28,.4)');g.addColorStop(1,'rgba(12,6,28,0)');X.fillStyle=g;X.fillRect(x,y+4,30,400);
+  g=X.createLinearGradient(x+w-30,0,x+w,0);g.addColorStop(0,'rgba(12,6,28,0)');g.addColorStop(1,'rgba(12,6,28,.4)');X.fillStyle=g;X.fillRect(x+w-30,y+4,30,400);
+  X.fillStyle=lc(.5);X.fillRect(x,y,w,2)}
+ else{const g=X.createLinearGradient(0,y+14,0,y+46);g.addColorStop(0,'rgba(12,6,28,.28)');g.addColorStop(1,'rgba(12,6,28,0)');X.fillStyle=g;X.fillRect(x+4,y+14,w-8,32);
+  X.fillStyle=lc(.55);X.fillRect(x+6,y+1,w-12,2);
+  const h=GY-y;if(h>25){X.fillStyle='rgba(12,6,28,'+Math.max(.06,.2-h/1800)+')';X.beginPath();X.ellipse(x+w/2-LT.lx*h*.35,GY+3,w*.5*(1+h/900),5+h/90,0,0,7);X.fill()}}};
+
+/* rim light + long cast shadow for Bristle */
+const RIM=mk(96,80),rg=RIM.getContext('2d'),SIL=mk(96,80),sg=SIL.getContext('2d');
+function bristleLook(t,after){if(Q>=1)return;const air=!P.g,mv=Math.abs(P.vx)>25&&P.g,fi=mv?Math.floor(P.step*.6)%4:0,s=A[P.glide?'char_bristle_glide':air?'char_bristle_jump':'char_bristle_run_'+fi],lx=LT.lx,sgn=bFs<0?-1:1;
+ if(!after){let gy=null;for(const q of SOL)if(P.x>q[0]&&P.x<q[0]+q[2]&&q[1]>=P.y+P.h-4&&(gy===null||q[1]<gy))gy=q[1];if(gy===null)return;const h=gy-(P.y+P.h);if(h>200)return;
+  sg.globalCompositeOperation='source-over';sg.clearRect(0,0,96,80);sg.drawImage(s,0,0,96,80);sg.globalCompositeOperation='source-in';sg.fillStyle='#120a22';sg.fillRect(0,0,96,80);
+  X.save();X.globalAlpha=.3*(1-h/220);X.translate(P.x,gy+5);X.transform(bFs,0,lx*.9,-.3,0,0);X.drawImage(SIL,-48,-42);X.restore();return}
+ const sy=air?1+Math.min(.14,Math.abs(P.vy)/4600):1-bSq*.35+(mv?Math.sin(P.step*1.2)*.025:Math.sin(t*2.2)*.012),bob=mv?-Math.abs(Math.sin(P.step*1.2))*2:0,d=2.2;
+ rg.globalCompositeOperation='source-over';rg.clearRect(0,0,96,80);rg.drawImage(s,0,0,96,80);rg.globalCompositeOperation='destination-out';rg.drawImage(s,-lx*d*sgn,d,96,80);
+ rg.globalCompositeOperation='source-in';rg.fillStyle=lc(.75);rg.fillRect(0,0,96,80);
+ X.save();X.translate(P.x,P.y+P.h/2+bob);X.rotate(P.vx/3400*P.f*bFs);X.scale(bFs/sy,sy);X.globalCompositeOperation='lighter';X.drawImage(RIM,-48,-42);X.restore()}
+const bristleD=bristle;bristle=function(t){bristleLook(t,0);bristleD(t);bristleLook(t,1)};
+
+/* foreground depth of field + bokeh */
+const fgL=fgPaint;fgPaint=function(t){const blur=Q==0&&'filter' in X;if(blur)X.filter='blur(2.2px)';fgL(t);if(blur)X.filter='none';
+ if(Q==0){X.save();X.globalCompositeOperation='lighter';for(let k=0;k<7;k++){const W=vw+300,x=((k*vw/6.3-cam*2.2+t*6)%W+W)%W-150,y=vh*(.12+hash(k*3)*.7)+Math.sin(t*.4+k)*12,r=40+hash(k)*60,g=X.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,lc(.07));g.addColorStop(.75,lc(.04));g.addColorStop(1,lc(0));X.fillStyle=g;X.fillRect(x-r,y-r,r*2,r*2)}X.restore()}};
+
+/* sun/moon glow with shafts, then dark-zone vignette and Seam Stone light pools */
+function lightPass(t){if(Q>=2)return;X.save();X.setTransform(S,0,0,S,0,0);X.globalCompositeOperation='lighter';
+ const k=1-LT.dk*.8,sx=LT.lx<-.2?vw*.12:LT.lx>.2?vw*.88:vw*.5;let g=X.createRadialGradient(sx,-20,0,sx,-20,vw*.75);g.addColorStop(0,lc(.24*k));g.addColorStop(1,lc(0));X.fillStyle=g;X.fillRect(0,0,vw,vh);
+ if(Q==0)for(let i=0;i<4;i++){const x0=sx+(i-1.5)*150+Math.sin(t*.2+i)*18-(cam*.04%150),dx=-LT.lx*-120;g=X.createLinearGradient(x0,0,x0-LT.lx*-1*0+dx,vh);g.addColorStop(0,lc(.08*k));g.addColorStop(1,lc(0));X.fillStyle=g;X.beginPath();X.moveTo(x0,0);X.lineTo(x0+60,0);X.lineTo(x0+60+dx*2.2,vh);X.lineTo(x0+dx*2.2-30,vh);X.fill()}
+ X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='source-over';
+ if(LT.dk>.02){const px=(P.x-cam)*S,py=(P.y+P.h/2+oy)*S,r=Math.max(C.width,C.height)*.55;g=X.createRadialGradient(px,py,r*.12,px,py,r);g.addColorStop(0,'rgba(6,3,22,0)');g.addColorStop(.35,'rgba(6,3,22,'+LT.dk*.35+')');g.addColorStop(1,'rgba(6,3,22,'+LT.dk*.8+')');X.fillStyle=g;X.fillRect(0,0,C.width,C.height)}
+ X.globalCompositeOperation='lighter';
+ ST.forEach(s=>{const sx2=(s.x-cam)*S;if(sx2<-300||sx2>C.width+300)return;const cy=(GY-40+oy)*S,rr=(s.on?170:90)*S,gg=X.createRadialGradient(sx2,cy,0,sx2,cy,rr);gg.addColorStop(0,s.on?'rgba(255,226,120,'+(.16+LT.dk*.4)+')':'rgba(120,120,200,.1)');gg.addColorStop(1,'rgba(255,226,120,0)');X.fillStyle=gg;X.fillRect(sx2-rr,cy-rr,rr*2,rr*2)});
+ X.restore()}
+const drawLt=draw;draw=function(t){lightStep();drawLt(t);lightPass(t)};
 })();
 reset();menu();requestAnimationFrame(loop);
 </script>
