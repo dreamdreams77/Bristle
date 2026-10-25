@@ -1200,6 +1200,44 @@ function findSpot2(zi,u,w,noLane){const z=Z[zi];for(let d=0;d<1400;d+=20)for(con
 /* outermost update: hit-stop, timers */
 const upd5=update;update=function(dt){if(hitStop>0){hitStop-=dt;return}cheerT-=dt;foldT=Math.max(0,foldT-dt*.8);upd5(dt)};
 const resetV5=reset;reset=function(){resetV5();cardSeen.clear();hitStop=foldT=cheerT=0;RT.classList.remove('go')};
+
+/* ===== v7: prop sway, wet-floor reflections, marsh water, Tidal Deep caustics and surface shimmer ===== */
+function sway(name,amp){const f=window[name];if(typeof f!='function')return;
+ window[name]=function(x,h,...r){if(Q>=2||RM)return f.call(this,x,h,...r);const T=performance.now()/1000,w=Math.sin(T*1.1+x*.004)+Math.sin(T*.31+x*.0011)*.8,d=x-P.x,push=Math.abs(d)<80?(d>0?1:-1)*(1-Math.abs(d)/80)*1.6:0,k=-(w*amp+push*amp*1.5);
+  X.save();X.translate(x,GY);X.transform(1,0,k,1,0,0);X.translate(-x,-GY);const o=f.call(this,x,h,...r);X.restore();return o}}
+[['tree',.014],['lolli',.03],['reed',.05],['cloudTree',.02],['dreamProp',.03],['fungProp',.018],['frostProp',.008],['tidalProp',.06]].forEach(a=>sway(a[0],a[1]));
+
+/* caustic tile, baked once */
+const CAU=mk(160,160);{const g=CAU.getContext('2d'),id=g.createImageData(160,160),d=id.data,T=Math.PI*2/160;
+ for(let y=0;y<160;y++)for(let x=0;x<160;x++){const a=Math.sin(x*T*2+Math.sin(y*T*3)*1.6),b=Math.sin(y*T*2+Math.sin(x*T*3)*1.6),c=Math.sin((x+y)*T*3+Math.sin((x-y)*T*2)*1.4),v=Math.pow(1-Math.min(Math.abs(a*b),Math.abs(b*c),Math.abs(a*c))*1.6,5),i=(y*160+x)*4;d[i]=190;d[i+1]=255;d[i+2]=245;d[i+3]=clamp(v*255,0,255)}g.putImageData(id,0,0)}
+const RFL=mk(128,128),rf=RFL.getContext('2d');
+function curSprite(){const mv=Math.abs(P.vx)>25&&P.g;return A[P.glide?'char_bristle_glide':!P.g?'char_bristle_jump':'char_bristle_run_'+(mv?Math.floor(P.step*.6)%4:0)]}
+function wetFloor(t){const zi=zIdx(P.x);if((zi!=4&&zi!=12)||Q>=2)return;let gy=null;for(const q of SOL)if(q[3]&&P.x>q[0]&&P.x<q[0]+q[2]&&q[1]>=P.y+P.h-4&&(gy===null||q[1]<gy))gy=q[1];if(gy===null)return;
+ const h=gy-(P.y+P.h);if(h>150)return;rf.globalCompositeOperation='source-over';rf.clearRect(0,0,128,128);rf.save();rf.translate(64,12+h+15);rf.scale(bFs<0?-1:1,-1);rf.drawImage(curSprite(),-48,-38,96,80);rf.restore();
+ rf.globalCompositeOperation='destination-in';const gr=rf.createLinearGradient(0,0,0,100);gr.addColorStop(0,'rgba(0,0,0,.75)');gr.addColorStop(1,'rgba(0,0,0,0)');rf.fillStyle=gr;rf.fillRect(0,0,128,128);
+ X.save();for(let i=0;i<14;i++){const y0=i*6,wob=Math.sin(t*3+i*.9)*(1.2+i*.12);X.drawImage(RFL,0,y0,128,6,P.x-64+wob,gy+3+y0,128,6)}X.restore()}
+function marsh(t){if(Q>=2)return;const c0=cam-60,c1=cam+vw+60;
+ /* sheen on wet ground */
+ for(const s of SOL){if(!s[3]||s[0]>c1||s[0]+s[2]<c0||(zIdx(s[0]+s[2]/2)!=4&&zIdx(s[0]+s[2]/2)!=12))continue;const z=zIdx(s[0]+s[2]/2),g=X.createLinearGradient(0,s[1],0,s[1]+26);g.addColorStop(0,z==4?'rgba(170,230,215,.34)':'rgba(120,235,230,.3)');g.addColorStop(1,'rgba(170,230,215,0)');X.fillStyle=g;X.fillRect(s[0],s[1],s[2],26);
+  X.save();X.globalCompositeOperation='lighter';X.strokeStyle='rgba(230,255,250,.5)';X.lineWidth=1.2;X.beginPath();for(let x=Math.max(s[0],Math.floor(c0/90)*90);x<Math.min(s[0]+s[2],c1);x+=90){const o=Math.sin(t*.8+x*.01)*18,xx=x+40+o;X.moveTo(xx-10,s[1]+7+hash(x)*8);X.lineTo(xx+10,s[1]+7+hash(x)*8)}X.stroke();X.restore()}
+ /* marsh pits fill with water */
+ const gs=G.filter(g=>g[1]>6000&&g[0]<7500).sort((a,b)=>a[0]-b[0]);
+ for(let i=0;i<gs.length-1;i++){const a=gs[i][1],b=gs[i+1][0];if(b<=a||b<c0||a>c1)continue;
+  const g=X.createLinearGradient(0,GY+4,0,GY+170);g.addColorStop(0,'rgba(60,150,150,.96)');g.addColorStop(1,'rgba(14,40,70,1)');X.fillStyle=g;X.beginPath();X.moveTo(a,GY+170);X.lineTo(a,GY+6);
+  for(let x=a;x<=b;x+=10)X.lineTo(x,GY+6+Math.sin(t*2.2+x*.08)*1.6);X.lineTo(b,GY+170);X.fill();
+  X.save();X.globalCompositeOperation='lighter';X.strokeStyle='rgba(220,255,250,.55)';X.lineWidth=1.6;X.beginPath();for(let x=a;x<=b;x+=10){const y=GY+6+Math.sin(t*2.2+x*.08)*1.6;x==a?X.moveTo(x,y):X.lineTo(x,y)}X.stroke();
+  for(let k=0;k<3;k++){const u=((t*.4+k/3)%1);X.globalAlpha=(1-u)*.5;X.beginPath();X.ellipse((a+b)/2+Math.sin(k*5)*(b-a)*.25,GY+8,u*(b-a)*.4,u*4,0,0,7);X.stroke()}X.restore();
+  X.save();X.globalAlpha=.3;X.translate(0,0);X.restore()}}
+const bristle6=bristle;bristle=function(t){marsh(t);wetFloor(t);bristle6(t)};
+/* Tidal Deep: caustics on the floor and a shimmering surface above */
+function waterFx(t){const c=cam+vw/2,z=Z[12],f=clamp((c-z.a+250)/450,0,1)*(zIdx(c)==12||c>z.a-250?1:0);if(f<=0||Q>=2)return;
+ X.save();X.setTransform(S,0,0,S,0,0);X.globalCompositeOperation='lighter';
+ const pat=X.createPattern(CAU,'repeat');pat.setTransform(new DOMMatrix().translate(-cam*.9+Math.sin(t*.5)*30+t*14,t*9).scale(1.4));X.fillStyle=pat;X.globalAlpha=.13*f;X.fillRect(0,oy+GY-70,vw,vh);
+ X.globalAlpha=.05*f;X.fillRect(0,0,vw,oy+GY-70);
+ const sg=X.createLinearGradient(0,0,0,90);sg.addColorStop(0,'rgba(190,255,245,'+.4*f+')');sg.addColorStop(1,'rgba(190,255,245,0)');X.fillStyle=sg;X.globalAlpha=1;X.beginPath();X.moveTo(0,0);
+ for(let x=0;x<=vw+16;x+=16)X.lineTo(x,22+Math.sin(x*.03+t*1.6)*5+Math.sin(x*.07-t*2.3)*3);X.lineTo(vw,0);X.fill();
+ X.strokeStyle='rgba(235,255,250,'+.55*f+')';X.lineWidth=2;X.beginPath();for(let x=0;x<=vw+16;x+=16){const y=22+Math.sin(x*.03+t*1.6)*5+Math.sin(x*.07-t*2.3)*3;x?X.lineTo(x,y):X.moveTo(x,y)}X.stroke();X.restore()}
+const draw6=draw;draw=function(t){draw6(t);waterFx(t)};
 })();
 reset();menu();requestAnimationFrame(loop);
 </script>
