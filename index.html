@@ -910,6 +910,7 @@ button:active:not(:disabled){transform:translateY(1px);box-shadow:none}
 #ov{backdrop-filter:blur(3px)}
 .bar i{box-shadow:0 0 8px rgba(246,183,60,.8)}
 .folds b.on{box-shadow:0 0 8px var(--honey)}
+@media (max-width:600px){#prog{width:46vw;top:50px}#czn,#ccr,#cbu,#cpd{display:none}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}}`;
  document.head.appendChild(st);
  const pg=document.createElement('div');pg.id='prog';
@@ -1021,7 +1022,17 @@ function bristleLook(t,after){if(Q>=1)return;const air=!P.g,mv=Math.abs(P.vx)>25
  rg.globalCompositeOperation='source-over';rg.clearRect(0,0,96,80);rg.drawImage(s,0,0,96,80);rg.globalCompositeOperation='destination-out';rg.drawImage(s,-lx*d*sgn,d,96,80);
  rg.globalCompositeOperation='source-in';rg.fillStyle=lc(.75);rg.fillRect(0,0,96,80);
  X.save();X.translate(P.x,P.y+P.h/2+bob);X.rotate(P.vx/3400*P.f*bFs);X.scale(bFs/sy,sy);X.globalCompositeOperation='lighter';X.drawImage(RIM,-48,-42);X.restore()}
-const bristleD=bristle;bristle=function(t){bristleLook(t,0);bristleD(t);bristleLook(t,1)};
+/* wind-swept grass that parts around Bristle and the Burrs, drawn in front of their feet */
+function grass(t){if(Q>=2)return;const c0=Math.floor((cam-20)/16)*16,c1=cam+vw+20,fy=P.y+P.h;X.save();X.lineCap='round';X.lineWidth=2.2;
+ for(const s of SOL){if(s[0]>c1||s[0]+s[2]<c0)continue;const y=s[1],z=Z[zIdx(s[0]+s[2]/2)],col=hx(z.t),lit=lc(.5);
+  X.strokeStyle=rgba(col.map(v=>v*.8),.95);X.beginPath();
+  for(let x=Math.max(c0,Math.ceil(s[0]/16)*16+4);x<Math.min(c1,s[0]+s[2]-4);x+=16){let h=hash(x*.37)*5+5;const d=x-P.x;let b=Math.sin(t*1.1+x*.012)*3.2+Math.sin(t*.27+x*.002)*2.2;
+   if(Math.abs(d)<38&&Math.abs(fy-y)<36){b+=(d>0?1:-1)*(1-Math.abs(d)/38)*6;h*=.6}
+   for(const q of BU)if(!q.dead&&Math.abs(q.x-x)<26&&y==GY){b+=(x>q.x?1:-1)*(1-Math.abs(q.x-x)/26)*5;h*=.6}
+   X.moveTo(x,y+1);X.quadraticCurveTo(x+b*.35,y-h*.55,x+b,y-h)}
+  X.stroke();X.strokeStyle=lit;X.lineWidth=1;X.stroke();X.lineWidth=2.2}
+ X.restore()}
+const bristleD=bristle;bristle=function(t){bristleLook(t,0);bristleD(t);bristleLook(t,1);grass(t)};
 
 /* foreground depth of field + bokeh */
 {const lf=A.fg_leaf,bc=mk(lf.width,lf.height),bx=bc.getContext('2d');if('filter' in bx){bx.filter='blur(5px)';bx.drawImage(lf,0,0);A.fg_leaf=bc}}
