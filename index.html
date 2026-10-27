@@ -127,7 +127,7 @@ function extras(t){const r=raining();
  if(sniff>0)AC.forEach(a=>{if(a.s&&!a.t){X.strokeStyle='#fff';X.lineWidth=3;X.globalAlpha=.6+.4*Math.sin(t*10);X.beginPath();X.arc(a.x,a.y,24+Math.sin(t*8)*5,0,7);X.stroke();X.globalAlpha=1}});
  if(r){X.strokeStyle='#cfeaff';X.lineWidth=1.5;X.globalAlpha=.6;for(let i=0;i<70;i++){const x=cam+hash(i)*vw,y=((hash(i+5)*600+t*700)%560)-20;X.beginPath();X.moveTo(x,y);X.lineTo(x-4,y+14);X.stroke()}X.globalAlpha=1}
  companions(t)}
-const ST=[{x:220,on:1},{x:1450,on:0},{x:2950,on:0},{x:4450,on:0},{x:6100,on:0},{x:7560,on:0},{x:9600,on:0},{x:11300,on:0},{x:12730,on:0},{x:14760,on:0},{x:16340,on:0},{x:18490,on:0},{x:20330,on:0}];
+const ST=[{x:220,on:1},{x:1450,on:0},{x:2950,on:0},{x:4450,on:0},{x:6100,on:0},{x:7720,on:0},{x:9600,on:0},{x:11300,on:0},{x:12730,on:0},{x:14760,on:0},{x:16340,on:0},{x:18490,on:0},{x:20330,on:0}];
 const SOL=[...G.map(g=>[g[0],GY,g[1]-g[0],1]),...PL.map(p=>[p[0],p[1],p[2],0])];
 let AC=[];
 function buildAcorns(){AC=[];G.forEach(g=>{for(let x=g[0]+90;x<g[1]-60;x+=230)AC.push({x,y:GY-44,t:0,s:0})});PL.forEach(p=>AC.push({x:p[0]+p[2]/2,y:p[1]-34,t:0,s:0}));MU.forEach(m=>AC.push({x:m.x,y:150,t:0,s:1}));RP.forEach(p=>AC.push({x:p[0]+p[2]/2,y:p[1]-34,t:0,s:0}))}
@@ -1238,6 +1238,9 @@ function waterFx(t){const c=cam+vw/2,z=Z[12],f=clamp((c-z.a+250)/450,0,1)*(zIdx(
  for(let x=0;x<=vw+16;x+=16)X.lineTo(x,22+Math.sin(x*.03+t*1.6)*5+Math.sin(x*.07-t*2.3)*3);X.lineTo(vw,0);X.fill();
  X.strokeStyle='rgba(235,255,250,'+.55*f+')';X.lineWidth=2;X.beginPath();for(let x=0;x<=vw+16;x+=16){const y=22+Math.sin(x*.03+t*1.6)*5+Math.sin(x*.07-t*2.3)*3;x?X.lineTo(x,y):X.moveTo(x,y)}X.stroke();X.restore()}
 const draw6=draw;draw=function(t){draw6(t);waterFx(t)};
+
+/* safety net: a respawn point must always sit over solid ground (Seam Stone 5 once floated over a gap, trapping players in a fall loop) */
+const updF=update;update=function(dt){updF(dt);if(cp&&!gAt(cp.x)){let best=null;for(const g of G){const c=clamp(cp.x,g[0]+40,g[1]-40);if(best===null||Math.abs(c-cp.x)<Math.abs(best-cp.x))best=c}if(best!==null)cp.x=best}};
 })();
 reset();menu();requestAnimationFrame(loop);
 </script>
