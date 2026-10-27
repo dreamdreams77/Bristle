@@ -832,7 +832,7 @@ update=function(dt){
  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.l+=dt;p.y-=38*dt;if(p.l>1.1)pops.splice(i,1)}
  for(let i=rings.length-1;i>=0;i--){rings[i].l+=dt;if(rings[i].l>.55)rings.splice(i,1)}
  for(let i=ghosts.length-1;i>=0;i--){ghosts[i].l-=dt;if(ghosts[i].l<=0)ghosts.splice(i,1)}
- if(low&&P.y<500){[R4,R5,RGL,RDD].forEach(r=>r.on=0);pounding=0;adT=0}
+ if(low&&P.y<500){[R4,R5,RGL,RDD].forEach(r=>r.on=0);pounding=0;adT=0;hurtCd=1.5}
  if(!tip&&zIdx(P.x)>=1){tip=1;setTimeout(()=>toast('New moves: S / Down = Ground Pound (smash honey crates) · Shift = Air Dash'),2700)}
 };
 
@@ -933,6 +933,8 @@ const BU=[];let ac=0,hurtCd=0,hurtMsg=0,zoneDone=new Set();
    if(!gAt(x-60)||!gAt(x+60)||near(x-130,bad)||near(x+130,bad)||near(x,bad)||ST.some(s=>Math.abs(s.x-x)<110)||MU.some(m=>Math.abs(m.x-x)<60)||CRATES.some(c=>Math.abs(c.x-x)<80)||BU.some(b=>Math.abs(b.x-x)<110))continue;
    const g=G.find(g=>x>g[0]&&x<g[1]);
    BU.push({x,zi,l:Math.max(g[0]+30,x-130),r:Math.min(g[1]-30,x+130),dir:sg,sp:38+zi*3,hop:zi>=5&&n==1,h:0,vy:0,t:Math.random()*3,dead:0,pop:0});n++;break}}}
+/* keep patrols clear of Seam Stones so a respawn never lands you beside a charging Burr */
+for(let i=BU.length-1;i>=0;i--){const b=BU[i];for(const s of ST)if(s.x>b.l-110&&s.x<b.r+110){if(s.x<=b.x)b.l=Math.max(b.l,s.x+110);else b.r=Math.min(b.r,s.x-110)}if(b.x<b.l||b.x>b.r||b.r-b.l<50)BU.splice(i,1)}
 function killBurr(b,how){if(b.dead)return;b.dead=1;b.pop=1;hitStop=.04;sfx.burr();pf(b.x,GY-18,'#ff9a6a',14,300);pf(b.x,GY-18,Z[b.zi].t,8,220);pop(b.x,GY-50,'Pop!','#ffb48a');shake=Math.max(shake,.2);
  chain++;chainT=2.6;
  const left=BU.filter(q=>q.zi==b.zi&&!q.dead).length;
@@ -1089,9 +1091,10 @@ const BADZ=[[6900,7550],[8780,9260],[11950,12300],[14150,14600],[16200,16700],[1
 const inR=(x,L)=>L.some(r=>x>r[0]-40&&x<r[1]+40);
 const HZ=[],GT=[],CP=[],CPM=new Map(),GU=[],ORB=[];
 const spotOk=(x,w,lane)=>gAt(x-w*.7)&&gAt(x+w*.7)&&!inR(x,BADZ)&&(lane||!inR(x,LANES))&&ST.every(s=>Math.abs(s.x-x)>150)&&MU.every(m=>Math.abs(m.x-x)>w*.8+20)&&CRATES.every(c=>Math.abs(c.x-x)>w*.8+25)&&BU.every(b=>Math.abs(b.x-x)>w*.8+20)&&HZ.every(h=>Math.abs(h.x-x)>h.w/2+w+50)&&GT.every(g=>Math.abs(g.x-x)>w+120)&&GU.every(g=>Math.abs(g.x-x)>w+160);
+function findGate(zi,u){const z=Z[zi];for(let d=0;d<1400;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);if(x>z.a+60&&x<z.b-60&&G.some(g=>x-110>g[0]&&x+110<g[1])&&spotOk(x,50,0))return x}return null}
 function findSpot(zi,u,w,lane){const z=Z[zi];for(let d=0;d<1400;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);if(x>z.a+60&&x<z.b-60&&spotOk(x,w,lane))return x}return null}
 [[9,.35],[9,.75],[7,.5],[8,.4]].forEach(([zi,u])=>{const x=findSpot(zi,u,60,0);if(x!==null){GU.push({x,zi});[110,215,320].forEach(y=>ORB.push({x:x+(y==215?10:-6),y:GY-y,t:0}))}});
-[[3,.65],[4,.5],[5,.6],[7,.65],[8,.5],[9,.6],[10,.5],[11,.65]].forEach(([zi,u])=>{const x=findSpot(zi,u,50,0);if(x!==null)GT.push({x,zi,broken:0,seen:0})});
+[[3,.65],[4,.5],[5,.6],[7,.65],[8,.5],[9,.6],[10,.5],[11,.65]].forEach(([zi,u])=>{const x=findGate(zi,u);if(x!==null)GT.push({x,zi,broken:0,seen:0})});
 [[3,.5],[1,.55],[2,.45],[4,.5],[5,.5],[6,.55],[7,.5],[8,.55],[9,.5],[10,.5],[11,.5],[12,.55]].forEach(([zi,u])=>{const x=findSpot(zi,u,60,1);if(x!==null)HZ.push({x,w:90+hash(x)*40|0,zi,k:'thorn'})});
 [[3,.85],[5,.8],[7,.82],[9,.8],[11,.8]].forEach(([zi,u])=>{const x=findSpot(zi,u,60,1);if(x!==null)HZ.push({x,w:90+hash(x)*40|0,zi,k:'thorn'})});
 [[5,.3],[5,.7],[10,.25],[10,.5],[10,.75]].forEach(([zi,u])=>{const x=findSpot(zi,u,40,0);if(x!==null)HZ.push({x,w:36,zi,k:zi==10?'ember':'steam',off:hash(x)*3})});
