@@ -820,6 +820,8 @@ $('ab').onclick=()=>{if(state!='play')return;state='art';$('ov').classList.remov
 /* ===== v2: bug fixes, depth (ground pound, air dash, honey crates, acorn chains, fold-map strip) and graphics (zone weather, grading, FX) ===== */
 (()=>{
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+/* spots people stand still at: citizens, creature cards, pearls, the shop. Hazards and patrols keep clear of them. */
+const KEEP=[...NPCS.map(n=>n.x),...CR.map(c=>c.x),...PE.map(q=>q.x),SHX];
 /* ===== art-pack sprites for the newer props (each id can be painted over) ===== */
 bake('prop_crate',64,64,'PROP: honey crate, bottom-centre on the ground line','1',g=>{g.translate(32,60);const gr=g.createLinearGradient(0,-42,0,0);gr.addColorStop(0,'#ffe08a');gr.addColorStop(1,'#d58a1e');g.fillStyle=gr;g.beginPath();g.roundRect(-23,-42,46,42,7);g.fill();
  g.save();g.clip();g.strokeStyle='rgba(120,66,8,.5)';g.lineWidth=1.5;for(let r=0;r<4;r++)for(let q=-2;q<3;q++){const hx=q*16+(r%2?8:0),hy=-38+r*13;g.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;g.lineTo(hx+Math.cos(a)*8,hy+Math.sin(a)*8)}g.closePath();g.stroke()}g.restore();
@@ -851,7 +853,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseKeys
 document.addEventListener('click',e=>{if(e.target.tagName=='BUTTON')e.target.blur()});
 
 /* --- honey crates: placed on solid ground, one or two per region --- */
-{const avoid=[...ST.map(s=>s.x),...MU.map(m=>m.x),RS,RF,SHX,9250,14500,20000,21800];
+{const avoid=[...ST.map(s=>s.x),...MU.map(m=>m.x),...KEEP,RS,RF,SHX,9250,14500,20000,21800];
  [[0,.62],[1,.3],[1,.75],[2,.4],[2,.8],[3,.35],[3,.8],[4,.45],[4,.85],[5,.3],[5,.7],[6,.5],[7,.4],[7,.85],[8,.5],[9,.4],[9,.8],[10,.35],[10,.75],[11,.4],[11,.8],[12,.3],[12,.7]].forEach(([zi,u])=>{
   const z=Z[zi];let best=null;
   for(let d=0;d<500&&best===null;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);
@@ -979,7 +981,9 @@ button:active:not(:disabled){transform:translateY(1px);box-shadow:none}
 #ov{backdrop-filter:blur(3px)}
 .bar i{box-shadow:0 0 8px rgba(246,183,60,.8)}
 .folds b.on{box-shadow:0 0 8px var(--honey)}
-@media (max-width:600px){#prog{width:46vw;top:50px}#czn,#ccr,#cbu,#cpd{display:none}}
+#ov{z-index:6}#toast{z-index:7}
+@media (max-width:600px){#prog{width:46vw;top:50px}#czn,#ccr,#cbu,#cpd{display:none}#hud h1{display:none}}
+@media (max-height:520px){#hud h1{display:none}#hud{padding:4px 10px;gap:8px;font-size:13px}.folds b{width:12px;height:12px}#prog{top:44px}#touch button{width:54px;height:54px}#touch2{bottom:72px}#touch2 button{width:44px;height:44px}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}}`;
  document.head.appendChild(st);
  const pg=document.createElement('div');pg.id='prog';
@@ -1003,7 +1007,7 @@ const BU=[];let ac=0,hurtCd=0,hurtMsg=0,zoneDone=new Set();
    const g=G.find(g=>x>g[0]&&x<g[1]);
    BU.push({x,zi,l:Math.max(g[0]+30,x-130),r:Math.min(g[1]-30,x+130),dir:sg,sp:38+zi*3,hop:zi>=5&&n==1,h:0,vy:0,t:Math.random()*3,dead:0,pop:0});n++;break}}}
 /* keep patrols clear of Seam Stones so a respawn never lands you beside a charging Burr */
-for(let i=BU.length-1;i>=0;i--){const b=BU[i];for(const s of ST)if(s.x>b.l-110&&s.x<b.r+110){if(s.x<=b.x)b.l=Math.max(b.l,s.x+110);else b.r=Math.min(b.r,s.x-110)}if(b.x<b.l||b.x>b.r||b.r-b.l<50)BU.splice(i,1)}
+for(let i=BU.length-1;i>=0;i--){const b=BU[i];for(const[cx,m]of[...ST.map(s=>[s.x,110]),...KEEP.map(k=>[k,100])])if(cx>b.l-m&&cx<b.r+m){if(cx<=b.x)b.l=Math.max(b.l,cx+m);else b.r=Math.min(b.r,cx-m)}if(b.r-b.l<50)BU.splice(i,1);else b.x=clamp(b.x,b.l,b.r)}
 function killBurr(b,how){if(b.dead)return;b.dead=1;b.pop=1;hitStop=.04;sfx.burr();pf(b.x,GY-18,'#ff9a6a',14,300);pf(b.x,GY-18,Z[b.zi].t,8,220);pop(b.x,GY-50,'Pop!','#ffb48a');shake=Math.max(shake,.2);
  chain++;chainT=2.6;
  const left=BU.filter(q=>q.zi==b.zi&&!q.dead).length;
@@ -1157,7 +1161,7 @@ let mi=0;setInterval(()=>{if(!AU||muted||state!='play'||document.hidden)return;c
 const BADZ=[[6900,7550],[8780,9260],[11950,12300],[14150,14600],[16200,16700],[17450,17800],[19500,19900],[21450,21900]],LANES=[[1480,2860],[2980,4380],[9660,10990],[12780,13860],[16360,17780],[18540,19280],[20380,21380]];
 const inR=(x,L)=>L.some(r=>x>r[0]-40&&x<r[1]+40);
 const HZ=[],GT=[],CP=[],CPM=new Map(),GU=[],ORB=[];
-const spotOk=(x,w,lane)=>gAt(x-w*.7)&&gAt(x+w*.7)&&!inR(x,BADZ)&&(lane||!inR(x,LANES))&&ST.every(s=>Math.abs(s.x-x)>150)&&MU.every(m=>Math.abs(m.x-x)>w*.8+20)&&CRATES.every(c=>Math.abs(c.x-x)>w*.8+25)&&BU.every(b=>Math.abs(b.x-x)>w*.8+20)&&HZ.every(h=>Math.abs(h.x-x)>h.w/2+w+50)&&GT.every(g=>Math.abs(g.x-x)>w+120)&&GU.every(g=>Math.abs(g.x-x)>w+160);
+const spotOk=(x,w,lane)=>gAt(x-w*.7)&&gAt(x+w*.7)&&KEEP.every(k=>Math.abs(k-x)>w*.8+90)&&!inR(x,BADZ)&&(lane||!inR(x,LANES))&&ST.every(s=>Math.abs(s.x-x)>150)&&MU.every(m=>Math.abs(m.x-x)>w*.8+20)&&CRATES.every(c=>Math.abs(c.x-x)>w*.8+25)&&BU.every(b=>Math.abs(b.x-x)>w*.8+20)&&HZ.every(h=>Math.abs(h.x-x)>h.w/2+w+50)&&GT.every(g=>Math.abs(g.x-x)>w+120)&&GU.every(g=>Math.abs(g.x-x)>w+160);
 function findGate(zi,u){const z=Z[zi];for(let d=0;d<1400;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);if(x>z.a+60&&x<z.b-60&&G.some(g=>x-110>g[0]&&x+110<g[1])&&spotOk(x,50,0))return x}return null}
 function findSpot(zi,u,w,lane){const z=Z[zi];for(let d=0;d<1400;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);if(x>z.a+60&&x<z.b-60&&spotOk(x,w,lane))return x}return null}
 [[9,.35],[9,.75],[7,.5],[8,.4]].forEach(([zi,u])=>{const x=findSpot(zi,u,60,0);if(x!==null){GU.push({x,zi});[110,215,320].forEach(y=>ORB.push({x:x+(y==215?10:-6),y:GY-y,t:0}))}});
@@ -1227,8 +1231,8 @@ const bristle4=bristle;bristle=function(t){const rc=racing(),vx=cam-80,vx2=cam+v
   else if(c.t<1){X.save();X.translate(0,c.t*c.t*520);X.globalAlpha=Math.max(0,1-c.t*1.1);psC(s);X.restore()}});
  bristle4(t)};
 const resetH=reset;reset=function(){resetH();GT.forEach(g=>{g.broken=0;g.seen=0});ORB.forEach(o=>o.t=0);CP.forEach(c=>{if(c.st==1&&!SOL.includes(c.s))SOL.push(c.s);c.st=0;c.t=0});lastZ=-1;sBh=sBd=null;sCards=0;sStones='';sWon=0};
-const saveH=save;save=function(){saveH();try{const d=JSON.parse(localStorage.getItem(SK));d.gt=GT.map(g=>g.broken?1:0);d.ob=ORB.map(o=>o.t?1:0);localStorage.setItem(SK,JSON.stringify(d))}catch(e){}};
-const loadH=load;load=function(){loadH();try{const d=JSON.parse(localStorage.getItem(SK));(d.gt||[]).forEach((v,i)=>{if(v&&GT[i])GT[i].broken=1});(d.ob||[]).forEach((v,i)=>{if(v&&ORB[i])ORB[i].t=1})}catch(e){}};
+const saveH=save;save=function(){saveH();try{const d=JSON.parse(localStorage.getItem(SK));d.gt=GT.map(g=>g.broken?1:0);d.ob=ORB.map(o=>o.t?1:0);d.zs=[...zoneSeen];localStorage.setItem(SK,JSON.stringify(d))}catch(e){}};
+const loadH=load;load=function(){loadH();try{const d=JSON.parse(localStorage.getItem(SK));(d.gt||[]).forEach((v,i)=>{if(v&&GT[i])GT[i].broken=1});(d.zs||[]).forEach(z=>zoneSeen.add(z));ST.forEach((s,i)=>{if(s.on)for(let z=0;z<=i;z++)zoneSeen.add(z)});(d.ob||[]).forEach((v,i)=>{if(v&&ORB[i])ORB[i].t=1})}catch(e){}};
 
 /* ===== v6: acorn upgrades, boss shockwave weak points, hit-stop, alert Burrs, companion cheers, region title cards with a fold-open sweep, extra hazards ===== */
 SHOP.push({k:'dashp',n:'Longer dash',d:'Farther, recharges faster',c:16},{k:'dash2',n:'Double dash',d:'Dash twice in the air',c:20},{k:'poundp',n:'Titan pound',d:'Wider shockwave',c:16});
@@ -1256,7 +1260,7 @@ const draw5=draw;draw=function(t){draw5(t);foldFx()};
 
 /* extra hand-tuned hazards */
 function findSpot2(zi,u,w,noLane){const z=Z[zi];for(let d=0;d<1400;d+=20)for(const sg of[1,-1]){const x=Math.round(z.a+(z.b-z.a)*u+sg*d);
- if(x>z.a+60&&x<z.b-60&&gAt(x-w*.6)&&gAt(x+w*.6)&&!inR(x,BADZ)&&!(noLane&&inR(x,LANES))&&ST.every(s=>Math.abs(s.x-x)>110)&&HZ.every(h=>Math.abs(h.x-x)>h.w/2+w+30)&&GT.every(g=>Math.abs(g.x-x)>w+90)&&GU.every(g=>Math.abs(g.x-x)>w+120)&&MU.every(m=>Math.abs(m.x-x)>w*.6+15))return x}return null}
+ if(x>z.a+60&&x<z.b-60&&gAt(x-w*.6)&&gAt(x+w*.6)&&KEEP.every(k=>Math.abs(k-x)>w*.8+90)&&!inR(x,BADZ)&&!(noLane&&inR(x,LANES))&&ST.every(s=>Math.abs(s.x-x)>110)&&HZ.every(h=>Math.abs(h.x-x)>h.w/2+w+30)&&GT.every(g=>Math.abs(g.x-x)>w+90)&&GU.every(g=>Math.abs(g.x-x)>w+120)&&MU.every(m=>Math.abs(m.x-x)>w*.6+15))return x}return null}
 [[10,.2],[10,.5],[10,.8]].forEach(([zi,u])=>{const x=findSpot2(zi,u,40);if(x!==null)HZ.push({x,w:36,zi,k:'ember',off:hash(x)*3})});
 [[4,.3],[4,.7],[8,.35]].forEach(([zi,u])=>{const x=findSpot2(zi,u,40);if(x!==null)HZ.push({x,w:36,zi,k:'steam',off:hash(x)*3})});
 [[4,.2],[5,.45],[10,.62],[2,.9]].forEach(([zi,u])=>{const x=findSpot2(zi,u,60,1);if(x!==null){GU.push({x,zi});[110,215,320].forEach(y=>ORB.push({x:x+(y==215?10:-6),y:GY-y,t:0}))}});
