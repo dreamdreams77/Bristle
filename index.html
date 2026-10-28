@@ -231,7 +231,7 @@ function draw(t){
  X.restore()}
 
 let last=performance.now();
-function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(state=='play'){const k=Math.max(1,Math.ceil(dt*90));for(let i=0;i<k;i++)update(dt/k);trailPush();perk(dt)}draw(n/1000);requestAnimationFrame(loop)}
+function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(state=='play'){const k=Math.max(1,Math.ceil(dt*90));for(let i=0;i<k;i++)update(dt/k);trailPush();perk(dt)}if(!window.ARTBUSY)draw(n/1000);requestAnimationFrame(loop)}
 /* ===== ART PIPELINE: baked painterly layers + asset manifest ===== */
 const ARTPACK=window.ARTPACK||{},A={},PAT={},MANIFEST=[];
 const rnd=(()=>{let s=11;return()=>(s=s*16807%2147483647)/2147483647})();
@@ -239,7 +239,7 @@ const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;r
 function strokes(g,w,h,n,l,d,vert){g.save();g.globalCompositeOperation='source-atop';g.lineCap='round';for(let i=0;i<n;i++){const x=rnd()*w,y=rnd()*h,a=vert?1.57+(rnd()-.5)*.4:rnd()*6.3,L=5+rnd()*14;g.strokeStyle=rnd()<.5?l:d;g.lineWidth=1.5+rnd()*3.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*L,y+Math.sin(a)*L);g.stroke()}g.restore()}
 function lit(g,w,h){g.save();g.globalCompositeOperation='source-atop';const q=g.createLinearGradient(0,0,w,h);q.addColorStop(0,'rgba(255,236,190,.4)');q.addColorStop(.5,'rgba(255,236,190,0)');q.addColorStop(1,'rgba(30,10,60,.45)');g.fillStyle=q;g.fillRect(0,0,w,h);g.restore()}
 function outl(c,col){const o=mk(c.width,c.height),g=o.getContext('2d');g.drawImage(c,0,0);g.globalCompositeOperation='source-in';g.fillStyle=col;g.fillRect(0,0,o.width,o.height);const r=mk(c.width,c.height),k=r.getContext('2d');for(let i=0;i<8;i++)k.drawImage(o,Math.cos(i*.785)*3,Math.sin(i*.785)*3);k.drawImage(c,0,0);return r}
-function bake(id,w,h,use,frames,fn,o={}){let c=mk(w,h);const g=c.getContext('2d');fn(g,w,h);if(!o.raw){strokes(g,w,h,Math.round(w*h/(o.d||140)),'rgba(255,240,205,.1)','rgba(25,10,45,.12)',o.vert);lit(g,w,h)}if(o.ol)c=outl(c,o.ol);A[id]=c;MANIFEST.push({id,file:'assets/'+id+'.png',width:w,height:h,transparent:!o.opaque,use,frames,source:'Procedural painterly bake, original work',license:'Project-owned, no third-party assets'});if(ARTPACK[id]){const im=new Image();im.onload=()=>A[id]=im;im.src=ARTPACK[id]}return c}
+function bake(id,w,h,use,frames,fn,o={}){let c=mk(w,h);const g=c.getContext('2d');fn(g,w,h);if(!o.raw){strokes(g,w,h,Math.round(w*h/(o.d||140)),'rgba(255,240,205,.1)','rgba(25,10,45,.12)',o.vert);lit(g,w,h)}if(o.ol)c=outl(c,o.ol);A[id]=c;MANIFEST.push({id,file:'assets/'+id+'.png',width:w,height:h,transparent:!o.opaque,use,frames,source:'Procedural painterly bake, original work',license:'Project-owned, no third-party assets'});if(ARTPACK[id])loadArtSrc(id,ARTPACK[id]);return c}
 
 /* characters: Bristle, 4 run frames + jump + glide */
 function bDraw(g,ph,air,gl){g.save();g.scale(2,2);g.translate(48,42);const l1=air?-4:Math.sin(ph)*6,l2=air?6:-Math.sin(ph)*6;
@@ -299,7 +299,7 @@ function bgPaint(t){const zi=zIdx(cam+vw/2);
  for(let L=0;L<3;L++){X.fillStyle=mix(Z[zi].t,'#2a1a4a',.55-L*.12);X.globalAlpha=.5+L*.12;X.beginPath();X.moveTo(0,vh);for(let x=0;x<=vw+30;x+=30){const wx=x+cam*(.12+L*.1);X.lineTo(x,oy+GY-90+L*28-Math.sin(wx*.006+L*3)*46-Math.sin(wx*.017+L)*16-(hash(Math.floor(wx/30)+L)>.7?10:0))}X.lineTo(vw,vh);X.fill()}X.globalAlpha=1;
  const ws=1.8,wx=520-cam*.3,by=oy+GY+40;
  if(wx>-900&&wx<vw+900){const tr=A.bg_willow_trunk;X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.1+.04*Math.sin(t);X.drawImage(A.glow_t,wx-600,by-900,1200,1200);X.restore();
-  X.drawImage(tr,wx-tr.width*ws/2,by-tr.height*ws,tr.width*ws,tr.height*ws);
+  {const tw=tr.lw||tr.width,th=tr.lh||tr.height;X.drawImage(tr,wx-tw*ws/2,by-th*ws,tw*ws,th*ws)}
   const ey=by-(560-372)*ws,pl=P.x-cam,a=Math.max(.15,Math.min(1,1-Math.abs(pl-wx)/900)),off=Math.max(-1,Math.min(1,(pl-wx)/250))*4;
   if(t%7>.18){X.save();X.globalCompositeOperation='lighter';[-1,1].forEach(sd=>{const ex=wx+sd*41*ws;X.globalAlpha=a;X.drawImage(A.glow_w,ex-26,ey-26,52,52);X.globalAlpha=1;X.fillStyle='#1a0c12';X.beginPath();X.ellipse(ex+off,ey,3,9,0,0,7);X.fill()});X.restore()}
   X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.35+.15*Math.sin(t*1.7);X.drawImage(A.glow_w,wx-50,by-(560-520)*ws-60,100,100);X.restore();
@@ -761,6 +761,62 @@ const perkGD=perk;perk=function(dt){perkGD(dt);RGL.update(dt);RDD.update(dt);if(
 const rsGD=reset;reset=function(){rsGD();[RGL,RDD].forEach(r=>{r.on=0;r.armed=1;r.bestT=null;r.bestM=-1})};
 const saveGD=save;save=function(){saveGD();try{const d=JSON.parse(localStorage.getItem(SK));[RGL,RDD].forEach(r=>d[r.key]=[r.bestT,r.bestM]);localStorage.setItem(SK,JSON.stringify(d))}catch(e){}};
 const loadGD=load;load=function(){loadGD();try{const d=JSON.parse(localStorage.getItem(SK));[RGL,RDD].forEach(r=>{if(d[r.key]){r.bestT=d[r.key][0];r.bestM=d[r.key][1]==null?-1:d[r.key][1]}})}catch(e){}};
+/* ===== painted art support: ARTPACK, art/pack.json, ?art=, drag-and-drop, saved art, hi-res, template export ===== */
+const ARTSTAT={painted:new Set(),warn:{}};
+function artBlur(c,k){if(!('filter' in c.getContext('2d')))return c;const o=mk(c.width,c.height),g=o.getContext('2d');g.filter='blur('+5*k+'px)';g.drawImage(c,0,0);o.lw=c.lw;o.lh=c.lh;return o}
+function applyArt(id,img){const m=MANIFEST.find(q=>q.id==id);if(!m){ARTSTAT.warn[id]='unknown id';return false}
+ const w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;if(!w||!h)return false;
+ const k=w/m.width,tile=m.frames=='tileable',hi=!tile&&k>=1.5&&k<=4&&Math.abs(w/m.width-h/m.height)<.03&&Math.abs(k-Math.round(k))<.05;
+ const ow=hi?w:m.width,oh=hi?h:m.height;let out=mk(ow,oh);const g=out.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,0,0,ow,oh);
+ if(!hi&&(w!=m.width||h!=m.height))ARTSTAT.warn[id]=w+'×'+h+' resampled to '+m.width+'×'+m.height;else delete ARTSTAT.warn[id];
+ out.lw=m.width;out.lh=m.height;if(id=='fg_leaf')out=artBlur(out,hi?Math.round(k):1);
+ A[id]=out;ARTSTAT.painted.add(id);let n;
+ if(n=/^bg_ground_(\d+)$/.exec(id))PAT['g'+n[1]]=X.createPattern(out,'repeat');
+ else if(n=/^mid_lip_(\d+)$/.exec(id))PAT['l'+n[1]]=X.createPattern(out,'repeat');
+ else if(id=='fx_grain'){PAT.grain=X.createPattern(out,'repeat');buildOV()}
+ return true}
+let artRT=0;function loadArtSrc(id,src,quiet){const im=new Image();im.onload=()=>{applyArt(id,im);if(state=='art'){clearTimeout(artRT);artRT=setTimeout(renderArt,150)}};im.onerror=()=>{if(!quiet)ARTSTAT.warn[id]='could not load '+src};im.src=src}
+function loadPack(url,quiet){return fetch(url).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>{const base=new URL(j.base||'',new URL(url,location.href)).href,ext=j.ext||'.png',ids=j.assets?Object.keys(j.assets):j.scan?MANIFEST.map(m=>m.id):Object.keys(j).filter(k=>typeof j[k]=='string');
+  ids.forEach(id=>{const f=j.assets?j.assets[id]:j.scan?id+ext:j[id];loadArtSrc(id,new URL(f,base).href,!!j.scan||quiet)});return ids.length}).catch(()=>0)}
+/* saved art survives reloads (IndexedDB) */
+const ArtDB={open:()=>new Promise((res,rej)=>{try{const r=indexedDB.open('bristle_art',1);r.onupgradeneeded=()=>r.result.createObjectStore('a');r.onsuccess=()=>res(r.result);r.onerror=()=>rej()}catch(e){rej()}}),
+ put:(id,blob)=>ArtDB.open().then(d=>{d.transaction('a','readwrite').objectStore('a').put(blob,id)}).catch(()=>{}),
+ all:()=>ArtDB.open().then(d=>new Promise(res=>{const o=[],c=d.transaction('a').objectStore('a').openCursor();c.onsuccess=()=>{const x=c.result;if(x){o.push([x.key,x.value]);x.continue()}else res(o)};c.onerror=()=>res(o)})).catch(()=>[]),
+ clear:()=>ArtDB.open().then(d=>{d.transaction('a','readwrite').objectStore('a').clear()}).catch(()=>{})};
+function addArtFiles(files){const ids=new Set(MANIFEST.map(m=>m.id));let ok=0;const bad=[];
+ [...files].forEach(f=>{if(!/\.(png|webp|jpe?g)$/i.test(f.name))return;const id=f.name.replace(/^.*[\\/]/,'').replace(/\.[^.]+$/,'');if(!ids.has(id)){bad.push(f.name);return}ok++;loadArtSrc(id,URL.createObjectURL(f));ArtDB.put(id,f)});
+ toast(ok?'Painted art loaded: '+ok+' asset'+(ok>1?'s':'')+(bad.length?' · '+bad.length+' name(s) not recognised':''):'No matching file names. Use the ids from the Art manifest, e.g. char_bristle_run_0.png');
+ if(state=='art')renderArt()}
+addEventListener('dragover',e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault()});
+addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files.length){e.preventDefault();addArtFiles(e.dataTransfer.files)}});
+/* template export: every current asset as PNG in a store-only zip, plus pack.json and a README */
+const CRCT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=u=>{let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRCT[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function makeZip(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;const le=(n,b)=>{const a=new Uint8Array(b);for(let i=0;i<b;i++)a[i]=(n>>>(8*i))&255;return a};
+ for(const[name,data]of files){const nm=enc.encode(name),crc=crc32(data),h=[le(0x04034b50,4),le(20,2),le(0,2),le(0,2),le(0,2),le(0x21,2),le(crc,4),le(data.length,4),le(data.length,4),le(nm.length,2),le(0,2),nm];
+  const hl=30+nm.length;parts.push(...h,data);cd.push([nm,crc,data.length,off]);off+=hl+data.length}
+ const cs=off;for(const[nm,crc,len,o]of cd)parts.push(le(0x02014b50,4),le(20,2),le(20,2),le(0,2),le(0,2),le(0,2),le(0x21,2),le(crc,4),le(len,4),le(len,4),le(nm.length,2),le(0,2),le(0,2),le(0,2),le(0,2),le(0,4),le(o,4),nm),off+=46+nm.length;
+ parts.push(le(0x06054b50,4),le(0,2),le(0,2),le(cd.length,2),le(cd.length,2),le(off-cs,4),le(cs,4),le(0,2));return new Blob(parts,{type:'application/zip'})}
+async function exportTemplate(){toast('Building art template…');window.ARTBUSY=1;try{await buildTemplate()}finally{window.ARTBUSY=0}}
+async function buildTemplate(){const files=[],enc=new TextEncoder();
+ for(const m of MANIFEST){const c=A[m.id];if(!c||!c.toBlob)continue;const b=await new Promise(r=>c.toBlob(r,'image/png'));if(b)files.push(['art/'+m.id+'.png',new Uint8Array(await b.arrayBuffer())])}
+ files.push(['art/pack.json',enc.encode(JSON.stringify({scan:true,base:'./',ext:'.png'},null,1))]);
+ files.push(['art/README.txt',enc.encode('Bristle painted-art template\n\nEach PNG is the current procedural art at its base size. Paint over it and keep the file name (the id).\n- Same size, or an exact 2x/3x/4x multiple for crisper art (not tileable textures).\n- Keep transparency where the original has it (see asset_manifest.json: transparent).\n- Characters are drawn centred; keep the feet on the same baseline as the template.\n\nUse it:\n1. Put the files in an art/ folder next to index.html (with pack.json), or\n2. Open the game, Art manifest > Load painted PNGs, or drag the files onto the page.\n')]);
+ files.push(['art/asset_manifest.json',enc.encode(JSON.stringify(MANIFEST,null,1))]);
+ const a=document.createElement('a');a.href=URL.createObjectURL(makeZip(files));a.download='bristle_art_template.zip';a.click();toast('Template downloaded: '+(files.length-3)+' PNGs')}
+function renderArt(){const n=ARTSTAT.painted.size,warn=Object.keys(ARTSTAT.warn);
+ $('card').innerHTML='<h2>Art manifest</h2><p><b>'+n+'</b> of '+MANIFEST.length+' assets are painted. The rest are painted procedurally at load. Drop PNGs named after an id onto the page, or load them here; they are saved in this browser.</p>'+(warn.length?'<p style="font-size:12px;color:var(--rose)">'+warn.slice(0,4).map(k=>k+': '+ARTSTAT.warn[k]).join('<br>')+(warn.length>4?'<br>+'+(warn.length-4)+' more':'')+'</p>':'')+
+ '<div style="display:flex;gap:6px;margin-bottom:6px"><button id="lf" style="flex:1">Load painted PNGs…</button><button id="tz" style="flex:1">Download art template</button></div><div style="max-height:34vh;overflow:auto;font-size:12px;line-height:1.3">'+MANIFEST.map(m=>'<p>'+(ARTSTAT.painted.has(m.id)?'🎨 ':'')+'<b>'+m.id+'.png</b> · '+m.width+'×'+m.height+' · alpha '+(m.transparent?'yes':'no')+'<br>'+m.use+' · frames: '+m.frames+'</p>').join('')+'</div>'+
+ '<div style="display:flex;gap:6px;margin-top:8px"><button id="dl" style="flex:1">manifest.json</button><button id="cl" style="flex:1"'+(n?'':' disabled')+'>Clear painted art</button></div><button id="go" style="margin-top:8px;width:100%">Back to game</button>';
+ $('lf').onclick=()=>{const i=document.createElement('input');i.type='file';i.multiple=true;i.accept='image/png,image/webp,image/jpeg';i.onchange=()=>addArtFiles(i.files);i.click()};
+ $('tz').onclick=exportTemplate;
+ $('dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(MANIFEST,null,1)],{type:'application/json'}));a.download='asset_manifest.json';a.click()};
+ $('cl').onclick=()=>{ArtDB.clear().then(()=>{toast('Painted art cleared. Reloading…');setTimeout(()=>location.reload(),600)})};
+ $('go').onclick=()=>{$('ov').classList.add('hide');state='play'}}
+$('ab').onclick=()=>{if(state!='play')return;state='art';$('ov').classList.remove('hide');renderArt()};
+/* boot: inline ARTPACK is handled by bake(); then ?art=, art/pack.json, then saved art */
+{const q=new URLSearchParams(location.search).get('art');if(q)loadPack(q);else if(location.protocol!='file:')loadPack('art/pack.json',true);ArtDB.all().then(rows=>rows.forEach(([id,b])=>loadArtSrc(id,URL.createObjectURL(b),true)))}
+
 /* ===== v2: bug fixes, depth (ground pound, air dash, honey crates, acorn chains, fold-map strip) and graphics (zone weather, grading, FX) ===== */
 (()=>{
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;

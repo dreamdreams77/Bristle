@@ -38,10 +38,22 @@ A playable, single-file HTML adventure: a honey badger named Bristle unfolds a w
 - Sketchbook of quests with Renown ranks, more shop items, and automatic saving (Continue on the title screen)
 
 ## Art pipeline
-All art is painted procedurally at load time (brush strokes, grain, rim light, outlines) into layered canvases: backgrounds, midground, props, characters, foreground foliage, and FX. It is **not** hand-painted bitmap art.
+All art is painted procedurally at load time (brush strokes, grain, rim light, outlines) into layered canvases: backgrounds, midground, props, characters, foreground foliage, and FX. It is **not** hand-painted bitmap art, but every one of the 115 assets can be replaced by a real painted PNG, with no code changes.
 
-- Click **Art manifest** in the game to see every asset (id, file name, size, alpha, use, frames, source) and download `asset_manifest.json`.
-- To replace any generated asset with a real painted PNG, set `window.ARTPACK = { "char_bristle_run_0": "art/bristle_run_0.png", ... }` before the script runs. Keep the same pixel size as listed in the manifest.
+### Painted art workflow
+1. In the game, click **Art manifest > Download art template**. You get `bristle_art_template.zip`: every current asset as a PNG named after its id (`char_bristle_run_0.png`, `bg_ground_3.png`, ...), plus `asset_manifest.json` and a ready-made `pack.json`.
+2. Paint over the PNGs. Keep the file names. Keep transparency where the manifest says `alpha: yes`.
+3. Use them any of these ways:
+   - **Drop the PNGs onto the game page**, or **Art manifest > Load painted PNGs**. They are saved in your browser (IndexedDB) and reapplied on every visit. **Clear painted art** removes them.
+   - **Ship them with the game**: put the files in an `art/` folder next to `index.html` together with `art/pack.json` (`{"scan":true}` loads `art/<id>.png` for every asset; or list `{"assets":{"<id>":"file.png"}}`). Works on GitHub Pages / any web host. Use `?art=path/to/pack.json` for a different pack.
+   - **Inline**: set `window.ARTPACK = { "char_bristle_run_0": "art/bristle_run_0.png", ... }` before the script runs (works from `file://` too).
+4. The Art manifest screen shows which assets are painted (🎨) and warns about size mismatches.
+
+### Sizes and rules
+- Same size as the manifest, **or an exact 2x/3x/4x multiple** for crisper art (the game keeps the extra resolution). Anything else is resampled to the manifest size and flagged.
+- Tileable textures (`bg_ground_*`, `mid_lip_*`, `fx_grain`) are always used at the manifest size and must tile seamlessly; the game rebuilds their patterns when you swap them.
+- `fg_leaf` is blurred by the game for depth of field, so paint it sharp.
+- Characters are drawn centred on the same baseline as the template; keep feet where the template has them.
 - All assets are original and project-owned; no third-party art is used.
 
 ## Design document
