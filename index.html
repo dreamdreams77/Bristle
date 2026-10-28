@@ -85,7 +85,7 @@ const PL=[[1600,340,120],[1750,280,100],[1960,350,60],[2150,330,140],[2560,350,6
 const MU=[1870,2470,3270,3770,4770,5270,6570,8070,8620,9370,9920,10470,11020,11720,12970,13420,13870,14520,14970,15420,15870,16770,17220,17670,18270,18770,19270,19770,20120,20670,21220].map(x=>({x,sq:0}));
 const RP=[[1500,300,90],[1640,230,90],[2200,260,90],[2330,200,90]];
 const CR=[{x:600,y:GY-18,n:'Glow-moth',c:'#ffe27a'},{x:1720,y:GY-18,n:'Moss-bear cub',c:'#7fb36a'},{x:2420,y:GY-18,n:'Bounce-hog',c:'#c98a54'},{x:3100,y:GY-18,n:'Gummy crab',c:'#ff7f7f'},{x:3600,y:GY-18,n:'Marshmallow seal',c:'#f5eef5'},{x:5100,y:GY-18,n:'Echo bat',c:'#b07cff'}];
-const RS=1480,RF=2860,SHX=380,MED=[[11,'Gold',8],[15,'Silver',5],[22,'Bronze',3]];
+const RS=1480,RF=2860,SHX=380,MED=[[10,'Gold',8],[14,'Silver',5],[20,'Bronze',3]];
 let race={on:0,t:0,armed:1},bestT=null,bestM=-1,bonus=0,spent=0,own={},nearShop=0;
 const SHOP=[{k:'scarf',n:'Red scarf',d:'A cosy look',c:6},{k:'hat',n:'Lantern hat',d:'Glows in the dark',c:10},{k:'boots',n:'Sky boots',d:'Jump higher',c:14},{k:'leaf',n:'Leaf glider+',d:'Glide slower',c:14}];
 const bankN=()=>found+bonus-spent;
@@ -185,7 +185,7 @@ function update(dt){
  CR.forEach(c=>{if(!c.t&&Math.hypot(c.x-P.x,c.y-P.y-10)<36){c.t=1;cards++;pf(c.x,c.y,'#b07cff',14,200);toast('Creature Card: '+c.n+'!');hud()}});
  const zi=zIdx(P.x);if(!zoneSeen.has(zi)){zoneSeen.add(zi);if(zi)toast('Entering '+Z[zi].n)}
  if(P.x<RS-20)race.armed=1;
- if(race.armed&&!race.on&&P.x>=RS&&P.x<RS+120){race.on=1;race.t=0;race.armed=0;toast('Acorn Dash! Reach the far flag. Gold: 11s')}
+ if(race.armed&&!race.on&&P.x>=RS&&P.x<RS+120){race.on=1;race.t=0;race.armed=0;toast('Acorn Dash! Reach the far flag. Gold: 10s')}
  if(race.on){race.t+=dt;if(P.x>=RF){race.on=0;finishRace()}}
  slow-=dt;{const q=slow>0?dt*.45:dt;bossUpdate(q);scUpdate(q);snUpdate(q);knUpdate(q);dcUpdate(q);mmUpdate(q);glUpdate(q);hcUpdate(q)}race2(dt);dashUpd(dt);nearShop=Math.abs(P.x-SHX)<70;
  $('tm').textContent=(gl.on&&!gl.dead)?'Snowdrift Golem '+'♥'.repeat(gl.hp):(mm.on&&!mm.dead)?'Magma Mole '+'♥'.repeat(mm.hp):(dc.on&&!dc.dead)?'Cannon Duchess '+'♥'.repeat(dc.hp):(kn.on&&!kn.dead)?'Nightmare Knitter '+'♥'.repeat(kn.hp):(sn.on&&!sn.dead)?'Stone Sentinel '+'♥'.repeat(sn.hp):(sc.on&&!sc.dead)?'Cog Scorpion '+'♥'.repeat(sc.hp):(bo.on&&!bo.dead)?'Lantern Leech '+'♥'.repeat(bo.hp):R3.on?'Deep Rail Dash '+R3.t.toFixed(1)+'s':R2.on?'Sugar Rail Rush '+R2.t.toFixed(1)+'s':race.on?'Acorn Dash '+race.t.toFixed(1)+'s':nearShop?'Press E: Sable’s shop':'';
@@ -409,9 +409,9 @@ function companions(t){const L=[[0,1],[1,ST[1].on],[2,ST[2].on],[3,ST[4].on],[4,
  if(f[1]){const q=g.createLinearGradient(14,0,60,0);q.addColorStop(0,f[1]);q.addColorStop(1,f[2]);g.fillStyle=q;g.beginPath();g.moveTo(14,14);g.quadraticCurveTo(38,8,60,16);g.lineTo(52,28);g.lineTo(60,42);g.quadraticCurveTo(38,36,14,44);g.fill();g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.arc(30,28,6,0,7);g.fill()}else{g.save();g.beginPath();g.moveTo(14,14);g.quadraticCurveTo(38,8,60,16);g.lineTo(60,42);g.quadraticCurveTo(38,36,14,44);g.clip();for(let i=0;i<8;i++)for(let j=0;j<4;j++){g.fillStyle=(i+j)%2?'#1c1624':'#fff';g.fillRect(14+i*6,10+j*9,6,9)}g.restore()}},{ol:'#2a1808',d:200}));
 function flag(x,chk){const s=A['prop_flag_'+(chk==1?'finish':chk==2?'start_p':'start_g')],t=performance.now()/500;X.save();X.translate(x,GY);X.transform(1,0,Math.sin(t+x)*.03,1,0,0);X.drawImage(s,-10,-118,64,120);X.restore()}
 bake('prop_boost_pad',120,30,'PROP: sugar boost pad','1 (glow pulse in-engine)',g=>{const q=g.createLinearGradient(0,0,0,30);q.addColorStop(0,'#ffb3d0');q.addColorStop(1,'#d9407a');g.fillStyle=q;g.beginPath();g.roundRect(4,4,112,22,10);g.fill();g.fillStyle='rgba(255,255,255,.85)';for(let i=0;i<4;i++){g.beginPath();g.moveTo(22+i*24,8);g.lineTo(34+i*24,15);g.lineTo(22+i*24,22);g.lineTo(27+i*24,22);g.lineTo(39+i*24,15);g.lineTo(27+i*24,8);g.fill()}g.fillStyle='rgba(255,255,255,.4)';g.beginPath();g.roundRect(12,6,96,4,2);g.fill()},{ol:'#5a1a3a',d:200});
-const R2={s:2980,f:4380,med:[[12,'Gold',8],[17,'Silver',5],[24,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1};let boost=0;const PADS=[3100,3600,4150];
+const R2={s:2980,f:4380,med:[[11,'Gold',8],[15,'Silver',5],[22,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1};let boost=0;const PADS=[3100,3600,4150];
 function finish2(){const t=R2.t;if(!R2.bestT||t<R2.bestT)R2.bestT=t;const m=R2.med.findIndex(x=>t<=x[0]);let msg='Sugar Rail Rush: '+t.toFixed(1)+'s. ';if(m<0)msg+='No medal yet. Run it again!';else{msg+=R2.med[m][1]+' medal!';if(R2.bestM<0||m<R2.bestM){const rw=R2.med[m][2]-(R2.bestM>=0?R2.med[R2.bestM][2]:0);bonus+=rw;R2.bestM=m;msg+=' +'+rw+' acorns to spend'}}toast(msg);hud()}
-function race2(dt){if(P.x<R2.s-20)R2.armed=1;if(R2.armed&&!R2.on&&!race.on&&P.x>=R2.s&&P.x<R2.s+120){R2.on=1;R2.t=0;R2.armed=0;toast('Sugar Rail Rush! Hit the pink pads for speed. Gold: 12s')}
+function race2(dt){if(P.x<R2.s-20)R2.armed=1;if(R2.armed&&!R2.on&&!race.on&&P.x>=R2.s&&P.x<R2.s+120){R2.on=1;R2.t=0;R2.armed=0;toast('Sugar Rail Rush! Hit the pink pads for speed. Gold: 11s')}
  if(R2.on){R2.t+=dt;if(P.x>=R2.f){R2.on=0;finish2()}}
  if(P.g&&PADS.some(p=>Math.abs(P.x-p)<30)){boost=1.2;pf(P.x,GY,'#ff8fb1',8,200)}
  if(boost>0){boost-=dt;P.vx+=(P.f*540-P.vx)*Math.min(1,10*dt)}}
@@ -509,8 +509,8 @@ function power(){const a=avail();if(!a.length){toast('Meet companions to unlock 
  else{dashT=.55;dashSp=900;dashMode=2;cdA=2.5;toast('Dilly: rolling ram!')}}
 function dashUpd(dt){race3(dt);floatT-=dt;glyph-=dt;scout-=dt;cdA-=dt;if(dashT>0){dashT-=dt;P.vx=P.f*dashSp;if(dashMode==1)P.vy=0;if(Math.random()<.5)pf(P.x-P.f*10,P.y+P.h/2,'#ffd8a0',1,60)}if(slow>0&&Math.random()<.3)pf(P.x+rnd()*40-20,P.y,'#8ec8f8',1,30)}
 /* Deep Rail Dash */
-const R3={s:16360,f:17780,med:[[13,'Gold',8],[18,'Silver',5],[26,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS3=[16550,17050,17520];
-function race3(dt){if(P.x<R3.s-20)R3.armed=1;if(R3.armed&&!R3.on&&!race.on&&!R2.on&&P.x>=R3.s&&P.x<R3.s+120){R3.on=1;R3.t=0;R3.armed=0;toast('Deep Rail Dash! Hit the rail pads. Gold: 13s')}
+const R3={s:16360,f:17780,med:[[12,'Gold',8],[16,'Silver',5],[23,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS3=[16550,17050,17520];
+function race3(dt){if(P.x<R3.s-20)R3.armed=1;if(R3.armed&&!R3.on&&!race.on&&!R2.on&&P.x>=R3.s&&P.x<R3.s+120){R3.on=1;R3.t=0;R3.armed=0;toast('Deep Rail Dash! Hit the rail pads. Gold: 12s')}
  if(R3.on){R3.t+=dt;if(P.x>=R3.f){R3.on=0;const t=R3.t;if(!R3.bestT||t<R3.bestT)R3.bestT=t;const m=R3.med.findIndex(x=>t<=x[0]);let msg='Deep Rail Dash: '+t.toFixed(1)+'s. ';if(m<0)msg+='No medal yet. Run it again!';else{msg+=R3.med[m][1]+' medal!';if(R3.bestM<0||m<R3.bestM){const rw=R3.med[m][2]-(R3.bestM>=0?R3.med[R3.bestM][2]:0);bonus+=rw;R3.bestM=m;msg+=' +'+rw+' acorns to spend'}}toast(msg);hud()}}
  if(P.g&&PADS3.some(p=>Math.abs(P.x-p)<30)){boost=1.2;pf(P.x,GY,'#ffb04a',8,200)}}
 function drawRace3(t){flag(R3.s,0);flag(R3.f,1);PADS3.forEach(p=>{X.drawImage(A.prop_boost_pad,p-30,GY-12,60,15);X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.35+.25*Math.sin(t*5+p);X.drawImage(A.glow_w,p-40,GY-34,80,40);X.restore()})}
@@ -685,8 +685,8 @@ function drawHermit(t){const s=hc.s,f=hc.inv>0&&Math.floor(t*14)%2;X.fillStyle='
  if(s=='current'||s=='warn'){X.save();X.globalCompositeOperation='lighter';for(let k=0;k<12;k++){const a=t*3+k*.52,r=30+((t*70+k*24)%150);X.globalAlpha=s=='warn'?.2:.7;X.drawImage(A.glow_t,hc.x+Math.cos(a)*r*(hc.x>P.x?-1:1)*.9-8,GY-40+Math.sin(a)*r*.3-8,16,16)}X.restore()}
  X.save();X.globalAlpha=f?.45:1;X.translate(hc.x,GY);X.rotate(s=='dazed'?Math.sin(t*3)*.1:0);X.scale(1,s=='dazed'?.8:1);X.drawImage(A.char_boss_hermit,-50,-86,100,90);X.restore();
  X.save();X.globalCompositeOperation='lighter';if(s=='dazed')for(let k=0;k<4;k++){const a=t*4+k*1.57;X.globalAlpha=.9;X.drawImage(A.glow_w,hc.x+Math.cos(a)*18-6,GY-84+Math.sin(a)*5-6,12,12)}for(let i=0;i<hc.hp;i++){X.globalAlpha=1;X.drawImage(A.glow_p,hc.x-16+i*16-11,GY-110-11,22,22)}X.restore()}
-const R4={s:20380,f:21380,med:[[10,'Gold',8],[14,'Silver',5],[21,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS4=[20520,20960,21200];
-function race4(dt){if(P.x<R4.s-20){R4.armed=1;R4.on=0}if(R4.armed&&!R4.on&&P.x>=R4.s&&P.x<R4.s+120){R4.on=1;R4.t=0;R4.armed=0;toast('Reef Rush! Ride the pink pads through the shallows. Gold: 10s')}
+const R4={s:20380,f:21380,med:[[9,'Gold',8],[13,'Silver',5],[19,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS4=[20520,20960,21200];
+function race4(dt){if(P.x<R4.s-20){R4.armed=1;R4.on=0}if(R4.armed&&!R4.on&&P.x>=R4.s&&P.x<R4.s+120){R4.on=1;R4.t=0;R4.armed=0;toast('Reef Rush! Ride the pink pads through the shallows. Gold: 9s')}
  if(R4.on){R4.t+=dt;if(P.x>=R4.f){R4.on=0;const t=R4.t;if(!R4.bestT||t<R4.bestT)R4.bestT=t;const m=R4.med.findIndex(x=>t<=x[0]);let msg='Reef Rush: '+t.toFixed(1)+'s. ';if(m<0)msg+='No medal yet. Run it again!';else{msg+=R4.med[m][1]+' medal!';if(R4.bestM<0||m<R4.bestM){const rw=R4.med[m][2]-(R4.bestM>=0?R4.med[R4.bestM][2]:0);bonus+=rw;R4.bestM=m;msg+=' +'+rw+' acorns to spend'}}toast(msg);hud()}}
  if(P.g&&PADS4.some(p=>Math.abs(P.x-p)<30)){boost=1.2;pf(P.x,GY,'#ff8fb1',8,200)}}
 function drawRace4(t){flag(R4.s,2);flag(R4.f,1);PADS4.forEach(p=>{X.drawImage(A.prop_boost_pad,p-30,GY-12,60,15);X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.35+.25*Math.sin(t*5+p);X.drawImage(A.glow_p,p-40,GY-34,80,40);X.restore()})}
@@ -710,7 +710,7 @@ const save0=save;save=function(){save0();try{const d=JSON.parse(localStorage.get
 const load0=load;load=function(){load0();try{const d=JSON.parse(localStorage.getItem(SK));(d.sq||[]).forEach((a,i)=>{if(SQ[i]){SQ[i].acc=a[0];SQ[i].base=a[1];SQ[i].t2=a[2]}});if(d.hc)hc.dead=1;if(d.r4){R4.bestT=d.r4[0];R4.bestM=d.r4[1]==null?-1:d.r4[1]}}catch(e){}};
 /* ===== citizens across the world, Cloud Hop race, Marlo's pearls ===== */
 let pearlN=0;const PE=[20450,20900,21150].map(x=>({x,y:GY-30,t:0}));
-const R5={s:9660,f:10990,med:[[13,'Gold',8],[18,'Silver',5],[26,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS5=[9780,10320,10860];
+const R5={s:9660,f:10990,med:[[12,'Gold',8],[16,'Silver',5],[23,'Bronze',3]],on:0,t:0,armed:1,bestT:null,bestM:-1},PADS5=[9780,10320,10860];
 const MED2=()=>[bestM,R2.bestM,R3.bestM,R4.bestM,R5.bestM].filter(m=>m>=0).length,BC=()=>[bo,sc,sn,kn,dc,mm,hc].filter(b=>b.dead).length,ZN=()=>zoneSeen.size,SN=()=>ST.filter(s=>s.on).length;
 NPCS.push(
  {x:1650,n:'Old Woodwick',k:1,t:()=>'The Whisperwood remembers every footstep. Bounce mushrooms are launch pads: hold jump at the top to glide.'},
@@ -737,7 +737,7 @@ SQ.push(
 QS.push({id:'r6',t:'Earn a medal in Cloud Hop',f:()=>R5.bestM>=0,r:3},{id:'p1',t:'Find all 3 reef pearls',f:()=>pearlN>=3,r:4});
 function drawPearls(t){PE.forEach(p=>{if(p.t||p.x<cam-40||p.x>cam+vw+40)return;const y=p.y+Math.sin(t*2+p.x)*4;X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.7+.3*Math.sin(t*3+p.x);X.drawImage(A.glow_t,p.x-24,y-24,48,48);X.restore();X.fillStyle='#fff';X.beginPath();X.arc(p.x,y,8,0,7);X.fill();X.fillStyle='rgba(140,220,240,.6)';X.beginPath();X.arc(p.x+2,y+2,6,0,7);X.fill();X.fillStyle='#fff';X.beginPath();X.arc(p.x-3,y-3,2.4,0,7);X.fill()})}
 const dn0=drawNpcs;drawNpcs=function(t){dn0(t);drawPearls(t)};
-function race5(dt){if(P.x<R5.s-20){R5.armed=1;R5.on=0}if(R5.armed&&!R5.on&&P.x>=R5.s&&P.x<R5.s+120){R5.on=1;R5.t=0;R5.armed=0;toast('Cloud Hop! Ride the pink pads across the sky. Gold: 13s')}
+function race5(dt){if(P.x<R5.s-20){R5.armed=1;R5.on=0}if(R5.armed&&!R5.on&&P.x>=R5.s&&P.x<R5.s+120){R5.on=1;R5.t=0;R5.armed=0;toast('Cloud Hop! Ride the pink pads across the sky. Gold: 12s')}
  if(R5.on){R5.t+=dt;if(P.x>=R5.f){R5.on=0;const t=R5.t;if(!R5.bestT||t<R5.bestT)R5.bestT=t;const m=R5.med.findIndex(x=>t<=x[0]);let msg='Cloud Hop: '+t.toFixed(1)+'s. ';if(m<0)msg+='No medal yet. Run it again!';else{msg+=R5.med[m][1]+' medal!';if(R5.bestM<0||m<R5.bestM){const rw=R5.med[m][2]-(R5.bestM>=0?R5.med[R5.bestM][2]:0);bonus+=rw;R5.bestM=m;msg+=' +'+rw+' acorns to spend'}}toast(msg);hud()}}
  if(P.g&&PADS5.some(p=>Math.abs(P.x-p)<30)){boost=1.2;pf(P.x,GY,'#ff8fb1',8,200)}}
 function drawRace5(t){flag(R5.s,2);flag(R5.f,1);PADS5.forEach(p=>{X.drawImage(A.prop_boost_pad,p-30,GY-12,60,15);X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.35+.25*Math.sin(t*5+p);X.drawImage(A.glow_p,p-40,GY-34,80,40);X.restore()})}
@@ -754,7 +754,7 @@ function mkGD(name,s,f,med,pads,key){const R={name,s,f,med,pads,key,on:0,t:0,arm
   if(R.on){R.t+=dt;if(P.x>=R.f){R.on=0;const t=R.t;if(!R.bestT||t<R.bestT)R.bestT=t;const m=R.med.findIndex(x=>t<=x[0]);let msg=R.name+': '+t.toFixed(1)+'s. ';if(m<0)msg+='No medal yet. Run it again!';else{msg+=R.med[m][1]+' medal!';if(R.bestM<0||m<R.bestM){const rw=R.med[m][2]-(R.bestM>=0?R.med[R.bestM][2]:0);bonus+=rw;R.bestM=m;msg+=' +'+rw+' acorns to spend'}}toast(msg);hud()}}
   if(P.g&&R.pads.some(p=>Math.abs(P.x-p)<30)){boost=1.2;pf(P.x,GY,'#ff8fb1',8,200)}};
  R.draw=t=>{if(R.s<cam-200||R.s>cam+vw+1500)return;flag(R.s,2);flag(R.f,1);R.pads.forEach(p=>{X.drawImage(A.prop_boost_pad,p-30,GY-12,60,15);X.save();X.globalCompositeOperation='lighter';X.globalAlpha=.35+.25*Math.sin(t*5+p);X.drawImage(A.glow_p,p-40,GY-34,80,40);X.restore()})};return R}
-const RGL=mkGD('Glacier Glide',18540,19280,[[8,'Gold',8],[12,'Silver',5],[18,'Bronze',3]],[18700,19050,19200],'r6'),RDD=mkGD('Dreamdive Dash',12780,13860,[[11,'Gold',8],[15,'Silver',5],[22,'Bronze',3]],[12900,13300,13700],'r7');
+const RGL=mkGD('Glacier Glide',18540,19280,[[7,'Gold',8],[11,'Silver',5],[16,'Bronze',3]],[18700,19050,19200],'r6'),RDD=mkGD('Dreamdive Dash',12780,13860,[[10,'Gold',8],[14,'Silver',5],[20,'Bronze',3]],[12900,13300,13700],'r7');
 const drGD=drawRace4;drawRace4=function(t){drGD(t);RGL.draw(t);RDD.draw(t)};
 QS.push({id:'r6',t:'Earn a medal in Glacier Glide',f:()=>RGL.bestM>=0,r:3},{id:'r7',t:'Earn a medal in Dreamdive Dash',f:()=>RDD.bestM>=0,r:3});
 const perkGD=perk;perk=function(dt){perkGD(dt);RGL.update(dt);RDD.update(dt);if(RGL.on)$('tm').textContent='Glacier Glide '+RGL.t.toFixed(1)+'s';if(RDD.on)$('tm').textContent='Dreamdive Dash '+RDD.t.toFixed(1)+'s'};
